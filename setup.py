@@ -9,7 +9,9 @@ setup(
    description='Package with functions',
    license="MIT",
    long_description=long_description,
+   long_description_content_type="text/markdown",
    author='Fu Ern Kwan',
    author_email='kwanern@umich.edu',
    packages=find_packages(),  #same as name
+   url = "https://github.com/kwanern/fkwan.git"
 )
