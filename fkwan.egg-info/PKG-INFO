@@ -1,8 +1,8 @@
 Metadata-Version: 2.1
 Name: fkwan
-Version: 1
+Version: 1.0.0
 Summary: Package with functions
-Home-page: https://github.com/kwanern/fkwan.git
+Home-page: https://github.com/kwanern/fkwan
 Author: Fu Ern Kwan
 Author-email: kwanern@umich.edu
 License: MIT
