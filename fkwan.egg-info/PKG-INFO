@@ -1,0 +1,37 @@
+Metadata-Version: 2.1
+Name: fkwan
+Version: 1
+Summary: Package with functions
+Home-page: https://github.com/kwanern/fkwan.git
+Author: Fu Ern Kwan
+Author-email: kwanern@umich.edu
+License: MIT
+Description: # Databricks Functions
+        
+        This package includes functions for python and pyspark that are used in databricks.
+        
+        ## Getting Started
+        
+        Packages required:
+        
+        ```
+        - pyspark
+        - pandas
+        - sklearn
+        - numpy
+        - re
+        ```
+        ## Versioning
+        
+        Version 1.00
+        
+        ## Authors
+        
+        * **Fu Ern Kwan** - *Initial work*
+        
+        ## License
+        
+        This project is licensed under the MIT License.
+        
+Platform: UNKNOWN
+Description-Content-Type: text/markdown

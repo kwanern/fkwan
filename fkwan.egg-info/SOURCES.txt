@@ -1,0 +1,6 @@
+README.md
+setup.py
+fkwan.egg-info/PKG-INFO
+fkwan.egg-info/SOURCES.txt
+fkwan.egg-info/dependency_links.txt
+fkwan.egg-info/top_level.txt
