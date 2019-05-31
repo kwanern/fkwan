@@ -6,7 +6,7 @@ with open("README.md", 'r') as f:
 setup(
    name='fkwan',
    description='Package with functions',
-   version = '1'
+   version = '1',
    license="MIT",
    long_description=long_description,
    long_description_content_type="text/markdown",
