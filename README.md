@@ -2,25 +2,30 @@
 
 This package includes functions for python and pyspark that are used in databricks.
 
+## Dependencies
+
+ - Spark 2.4. 
+ - A recent version of pandas. 
+ - Python 3.5+.
+
 ## Getting Started
 
-Packages required:
-
+`fkwan` is available at the [Github](https://github.com/kwanern/fkwan), for databricks
 ```
-- pyspark
-- pandas
-- sklearn
-- numpy
-- re
+/databricks/python/bin/pip install git+https://github.com/kwanern/fkwan.git
+cd /databricks/python3/lib/python3.5/site-packages
+git clone https://github.com/kwanern/fkwan.git
+```
+
+After installing the packages, you can import the package:
+```
+import fkwan
 ```
 ## Versioning
 
-Version 1.00
+Version 1.0.1
 
 ## Authors
 
 * **Fu Ern Kwan** - *Initial work*
 
-## License
-
-This project is licensed under the MIT License.
