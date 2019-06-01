@@ -1,3 +1,6 @@
+from pyspark.sql import functions as sqlf
+
+
 @sqlf.udf("string")
 def concat_string_arrays(*ls):
     """
