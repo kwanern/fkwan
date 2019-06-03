@@ -13,7 +13,7 @@ def days(day):
 # Read Table Function
 def date_range(start_date, end_date):
     """
-        This function adds/subtracts day from a datetime object
+        This function creates an array of date integer, by 1 day
         :param start_date: string, e.g. '20190101'
         :param end_date: string, e.g. '20190201'
         :return: array of date integer

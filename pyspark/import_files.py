@@ -1,7 +1,25 @@
-from ..libraries import *
+from ..libraries.__init__ import *
+from ..python import *
 
 
 def import_list_old(date_range, base_path, header, delimiter):
+    """
+        This function imports a list of raw file (old and archived).
+
+        :param date_range: array
+        :param base_path: string
+        :param header: array
+        :param delimiter: character
+        :return: array of date integer
+
+        Examples:
+        >>> import_list_old(
+        >>>     date_range('20190101', '20190201'),
+        >>>     "/mnt/workspaces/customeranalytics/dev/dmb/feature_mart/day/",
+        >>>     hdr,
+        >>>     ","
+        >>> )
+    """
     fields = [(StructField(field, StringType(), True)) for field in header]
     svc_schema = StructType(fields)
     paths = list(map(lambda x: base_path.format(x), date_range))
