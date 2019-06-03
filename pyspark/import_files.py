@@ -38,7 +38,7 @@ def import_list(date_range, base_path, delimiter, header_names=None):
         :return: spark dataframe
 
         Examples:
-        >>> import_list_old(
+        >>> import_list(
         >>>     date_range('20190101', '20190201'),
         >>>     "/mnt/workspaces/customeranalytics/dev/dmb/feature_mart/day/",
         >>>     ",",
@@ -95,7 +95,7 @@ def spark_read_csv(file_path, delimiter=",", header_names=None):
         :return: spark dataframe
 
         Examples:
-        >>> import_list_old(
+        >>> spark_read_csv(
         >>>     "/mnt/workspaces/customeranalytics/dev/dmb/feature_mart/day/",
         >>>     ",",
         >>>     True
