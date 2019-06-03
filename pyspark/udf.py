@@ -4,7 +4,7 @@ from ..libraries import *
 @sqlf.udf("string")
 def concat_string_arrays(*ls):
     """
-        This function concat multiple string columns into one column with separator &
+        This function concat multiple string columns into one column with separator '&'
         :param ls: array of column names
         :return: string column
     """
