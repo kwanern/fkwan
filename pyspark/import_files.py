@@ -86,6 +86,21 @@ def read_table_azure_latest(file_path, text_name):
 
 
 def spark_read_csv(file_path, delimiter=",", header_names=None):
+    """
+        This function imports csv file into spark dataframe.
+
+        :param file_path: string
+        :param delimiter: character
+        :param header_names: boolean
+        :return: spark dataframe
+
+        Examples:
+        >>> import_list_old(
+        >>>     "/mnt/workspaces/customeranalytics/dev/dmb/feature_mart/day/",
+        >>>     ",",
+        >>>     True
+        >>> )
+    """
     df = None
     if header_names is None:
         header = "true"
