@@ -1,4 +1,4 @@
-import pandas as pd
+from ..libraries import *
 
 
 def days(day):
