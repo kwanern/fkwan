@@ -10,7 +10,7 @@ def import_list_old(date_range, base_path, header, delimiter):
         :param base_path: string
         :param header: array
         :param delimiter: character
-        :return: array of date integer
+        :return: spark dataframe
 
         Examples:
         >>> import_list_old(
@@ -28,6 +28,23 @@ def import_list_old(date_range, base_path, header, delimiter):
 
 
 def import_list(date_range, base_path, delimiter, header_names=None):
+    """
+        This function imports a list of raw file.
+
+        :param date_range: array
+        :param base_path: string
+        :param delimiter: character
+        :param header_names: boolean
+        :return: spark dataframe
+
+        Examples:
+        >>> import_list_old(
+        >>>     date_range('20190101', '20190201'),
+        >>>     "/mnt/workspaces/customeranalytics/dev/dmb/feature_mart/day/",
+        >>>     ",",
+        >>>     True
+        >>> )
+    """
     df = None
     paths = list(map(lambda x: base_path.format(x), date_range))
 
