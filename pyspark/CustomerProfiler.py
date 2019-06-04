@@ -7,7 +7,8 @@ class CustomerProfiler(object):
         self.start_dates_pd = [pd.to_datetime(a["Promo_Start_Date"]).date() for a in products.values()]
         self.end_dates_pd = [pd.to_datetime(a["Promo_End_Date"]).date() for a in products.values()]
         self.products_names = [a["Product_Name"] for a in products.values()]
-        self.products_id = [a["NotionalProductlId"] for a in products.values()]
+        self.level = [a["EPH_level"] for a in products.values()][0]
+        self.products_id = [a["Id"] for a in products.values()]
         self.pch_frq_min = [a["Purchased_Freq_Min"] for a in products.values()]
         self.pch_frq_max = [a["Purchased_Freq_Max"] for a in products.values()]
         self.date_range = date_range
@@ -54,11 +55,11 @@ class CustomerProfiler(object):
         )
 
         # Convert products dict to DataFrame
-        self.products_df = pd.DataFrame([(a["Product_Name"], b, a["Purchased_Freq_Min"], a["Purchased_Freq_Max"]) \
-                                    for a in products.values() \
-                                    for b in a["NotionalProductlId"]
-                                    ],
-                                   columns=["Product", "Product_Id", "Min", "Max"])
+        self.products_df = pd.DataFrame([(a["Product_Name"], b, a["Purchased_Freq_Min"], a["Purchased_Freq_Max"])
+                                        for a in products.values()
+                                        for b in a["Id"]
+                                        ],
+                                        columns=["Product", "Product_Id", "Min", "Max"])
         self.products_spdf = spark.createDataFrame(self.products_df)
 
         # Purchased Frequency
@@ -69,7 +70,7 @@ class CustomerProfiler(object):
             )
             .join(
                 self.products_spdf.alias("ind"),
-                sqlf.col("pos.NotionalProductlId") == sqlf.col("ind.Product_Id"),
+                sqlf.col("pos." + self.level) == sqlf.col("ind.Product_Id"),
                 how="inner"
             )
             .groupBy("pos.Id", "ind.Product", "ind.Min", "ind.Max")
@@ -86,7 +87,7 @@ class CustomerProfiler(object):
                 sqlf.when(
                     ((sqlf.col("BusinessDate")
                       .between(str(self.start_dates_pd[i]), str(self.end_dates_pd[i]))) &
-                     (sqlf.col("NotionalProductlId").isin(self.products_id[i]))
+                     (sqlf.col(self.level).isin(self.products_id[i]))
                      ), self.products_names[i])
                 .otherwise(None)))
             .alias(re.sub("\s", "_", self.products_names[i])) for i in range(0, len(self.products_id))]
