@@ -1,13 +1,9 @@
 from ..libraries.__init__ import *
 from .udf import concat_string_arrays
-from pyspark.sql import SparkSession
-
-
-spark = spark
 
 
 class CustomerProfiler(object):
-    def __init__(self, products, date_range):
+    def __init__(self, spark, products, date_range):
         self.start_dates_pd = [pd.to_datetime(a["Promo_Start_Date"]).date() for a in products.values()]
         self.end_dates_pd = [pd.to_datetime(a["Promo_End_Date"]).date() for a in products.values()]
         self.products_names = [a["Product_Name"] for a in products.values()]
