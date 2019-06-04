@@ -54,6 +54,24 @@ class CustomerProfiler(object):
             )
         )
 
+        # Join EPH
+        self.pos = (
+            self.pos
+            .alias("pos")
+            .join(
+                spark
+                .table("edap_pub_productitem.enterprise_product_hierarchy")
+                .alias("EPH"),
+                sqlf.col("pos.ItemNumber") == sqlf.col("EPH.ItemId"),
+                how="inner"
+            )
+            .select([
+                "pos.*",
+                "EPH.MarketedProductDescription",
+                "EPH.MarketedProductId"
+            ])
+        )
+
         # Convert products dict to DataFrame
         self.products_df = pd.DataFrame([(a["Product_Name"], b, a["Purchased_Freq_Min"], a["Purchased_Freq_Max"])
                                         for a in products.values()
