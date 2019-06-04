@@ -81,7 +81,7 @@ class CustomerProfiler(object):
         self.products_spdf = spark.createDataFrame(self.products_df)
 
         # Purchased Frequency
-        pf_spdf = (
+        self.pf_spdf = (
             self.pos.alias("pos")
             .filter(
                 sqlf.col("BusinessDate").between(str(min(self.start_dates_pd)), str(max(self.end_dates_pd)))
