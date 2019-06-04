@@ -3,7 +3,7 @@ from .udf import concat_string_arrays
 from pyspark.sql import SparkSession
 
 
-spark = SparkSession("databricks")
+spark = spark
 
 
 class CustomerProfiler(object):
