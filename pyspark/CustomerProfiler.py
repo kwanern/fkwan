@@ -61,7 +61,6 @@ class CustomerProfiler(object):
                                    columns=["Product", "Product_Id", "Min", "Max"])
         self.products_spdf = spark.createDataFrame(self.products_df)
 
-    def overlap(self):
         # Purchased Frequency
         pf_spdf = (
             self.pos.alias("pos")
@@ -80,6 +79,7 @@ class CustomerProfiler(object):
             .where(sqlf.col("Qty").between(sqlf.col("Min"), sqlf.col("Max")))
         )
 
+    def overlap(self):
         # Indicator
         exprs_ind = [
             (sqlf.max(
@@ -92,7 +92,7 @@ class CustomerProfiler(object):
             .alias(re.sub("\s", "_", self.products_names[i])) for i in range(0, len(self.products_id))]
 
         ind = (
-            pf_spdf.alias("ind")
+            self.pf_spdf.alias("ind")
             .join(
                 self.pos.alias("pos"),
                 sqlf.col("pos.Id") == sqlf.col("ind.Id"),
@@ -133,3 +133,38 @@ class CustomerProfiler(object):
         )
 
         return table_overlap
+
+    def individual(self):
+        ind = (
+            self.pf_spdf
+            .select(["Id", "Product"])
+            .distinct()
+        )
+
+        # Result Table
+        grp_var = ([
+            "pos.FiscalYearNumber",
+            "pos.FiscalPeriodInYearNumber",
+            "Customer_Type",
+            "pos.Id",
+            "Product",
+            "ProductCategoryDescription",
+            "ProductStyleDescription",
+            "NotionalProductDescription",
+            "pos.NetDiscountedSalesAmount",
+            "pos.TransactionId",
+            "pos.NetDiscountedSalesQty"
+        ])
+
+        table_a = (
+            self.pos.alias("pos")
+            .join(
+                ind.alias("ind"),
+                sqlf.col("pos.Id") == sqlf.col("ind.Id"),
+                how="inner"
+            )
+            .select(grp_var)
+            .filter(sqlf.col("Product") != '')
+        )
+
+        return table_a
