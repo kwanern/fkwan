@@ -1,7 +1,8 @@
 from ..libraries import *
+from pyspark.sql.functions import pandas_udf, PandasUDFType
 
 
-@sqlf.udf("string")
+@pandas_udf("string", PandasUDFType.GROUPED_MAP)
 def concat_string_arrays(*ls):
     """
         This function concat multiple string columns into one column with separator '&'
@@ -10,6 +11,6 @@ def concat_string_arrays(*ls):
         :return: string column
 
         Examples:
-        >>> concat_string_arrays(*[re.sub("\s", "_", i) for i in products_names])
+        >>> concat_string_arrays(*[re.sub("\s", "_", i) for i in product_names])
     """
     return ' & '.join(filter(None, ls))
