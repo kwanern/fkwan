@@ -1,6 +1,11 @@
 from ..libraries import *
 from pyspark.sql.functions import pandas_udf, PandasUDFType
+from functools import reduce
+from pyspark.sql import DataFrame
 
+
+def union_all(*dfs):
+    return reduce(DataFrame.union, dfs)
 
 @pandas_udf("string", PandasUDFType.GROUPED_MAP)
 def concat_string_arrays(*ls):
