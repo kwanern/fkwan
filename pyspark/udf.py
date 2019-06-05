@@ -7,7 +7,7 @@ from pyspark.sql import DataFrame
 def union_all(*dfs):
     return reduce(DataFrame.union, dfs)
 
-@pandas_udf("string", PandasUDFType.GROUPED_MAP)
+@pandas_udf("string", PandasUDFType.SCALAR)
 def concat_string_arrays(*ls):
     """
         This function concat multiple string columns into one column with separator '&'
