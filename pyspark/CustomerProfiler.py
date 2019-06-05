@@ -29,7 +29,7 @@ class Customer(object):
                     sqlf.col("AccountId").isNotNull() |
                     sqlf.col("FirstPaymentToken").isNotNull()
                 ) &
-                sqlf.col("BusinessDate").between(str(min(self.start_dates_pd)), str(max(self.end_dates_pd)))
+                sqlf.col("BusinessDate").between(self.start_dates_pd, self.end_dates_pd)
             )
             .withColumn(
                 "Id",
