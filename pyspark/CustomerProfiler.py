@@ -141,7 +141,7 @@ class Profiler(object):
                 sqlf.when(
                     ((sqlf.col("BusinessDate")
                       .between(str(self.start_dates_pd[i]), str(self.end_dates_pd[i]))) &
-                     (sqlf.col(self.level).isin(self.products_id[i]))
+                     (sqlf.col(self.level[i]).isin(self.products_id[i]))
                      ), self.products_names[i])
                 .otherwise(None)))
             .alias(re.sub("\s", "_", self.products_names[i])) for i in range(0, len(self.products_id))]
