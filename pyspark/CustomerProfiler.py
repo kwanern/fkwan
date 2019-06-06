@@ -69,14 +69,14 @@ class Customer(object):
 
 class Profiler(object):
     def __init__(self, spark, customers, date_range):
-        self.pf_spdf = union_all(*customers.pf_spdf)
-        self.start_dates_pd = [a for a in customers.start_dates_pd]
-        self.end_dates_pd = [a for a in customers.end_dates_pd]
-        self.products_names = [a for a in customers.product_names]
-        self.level = [a for a in customers.level]
-        self.products_id = [a for a in customers.products_id]
-        self.pch_frq_min = [a for a in customers.pch_frq_min]
-        self.pch_frq_max = [a for a in customers.pch_frq_max]
+        self.pf_spdf = union_all(*[a.spdf for a in customers])
+        self.start_dates_pd = [a.start_dates_pd for a in customers]
+        self.end_dates_pd = [a.end_dates_pd for a in customers]
+        self.products_names = [a.product_names for a in customers]
+        self.level = [a.level for a in customers]
+        self.products_id = [a.products_id for a in customers]
+        self.pch_frq_min = [a.pch_frq_min for a in customers]
+        self.pch_frq_max = [a.pch_frq_max for a in customers]
         self.date_range = date_range
 
         # POS
