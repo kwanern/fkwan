@@ -83,12 +83,47 @@ class Profiler(object):
         self.pos = (
             spark
             .table("fkwan.pos_line_item")
-            .alias("pos")
             .filter(
-                sqlf.col("pos.AccountId").isNotNull() |
-                sqlf.col("pos.FirstPaymentToken").isNotNull()
+                sqlf.col("AccountId").isNotNull() |
+                sqlf.col("FirstPaymentToken").isNotNull()
             )
-            .filter(sqlf.col("pos.BusinessDate").between(self.date_range[0], self.date_range[1]))
+            .filter(sqlf.col("BusinessDate").between(self.date_range[0], self.date_range[1]))
+            .withColumn(
+                "Customer_Type",
+                sqlf.when(
+                    sqlf.col("AccountId").isNotNull(), "SR"
+                )
+                .otherwise("Token")
+            )
+            .withColumn(
+                "Id",
+                sqlf.when(
+                    sqlf.col("AccountId").isNotNull(), sqlf.col("AccountId")
+                )
+                .otherwise(sqlf.col("FirstPaymentToken"))
+            )
+            .withColumn(
+                "ProductCategoryDescription",
+                sqlf.when(
+                    sqlf.col("ProductTypeDescription").isin(["Food", "Beverage"]),
+                    sqlf.col("ProductCategoryDescription")
+                )
+                .otherwise("Other")
+            )
+            .withColumn(
+                "ProductStyleDescription",
+                sqlf.when(
+                    sqlf.col("ProductStyleDescription").isin(["Food", "Beverage"]),
+                    sqlf.col("ProductStyleDescription")
+                )
+                .otherwise("Other")
+            )
+        )
+
+        # Join EPH
+        self.pos = (
+            self.pos
+            .alias("pos")
             .join(
                 spark
                 .table("edap_pub_productitem.enterprise_product_hierarchy")
@@ -96,36 +131,11 @@ class Profiler(object):
                 sqlf.col("pos.ItemNumber") == sqlf.col("EPH.ItemId"),
                 how="inner"
             )
-            .withColumn(
-                "Customer_Type",
-                sqlf.when(
-                    sqlf.col("pos.AccountId").isNotNull(), "SR"
-                )
-                .otherwise("Token")
-            )
-            .withColumn(
-                "Id",
-                sqlf.when(
-                    sqlf.col("pos.AccountId").isNotNull(), sqlf.col("pos.AccountId")
-                )
-                .otherwise(sqlf.col("pos.FirstPaymentToken"))
-            )
-            .withColumn(
-                "ProductCategoryDescription",
-                sqlf.when(
-                    sqlf.col("pos.ProductTypeDescription").isin(["Food", "Beverage"]),
-                    sqlf.col("pos.ProductCategoryDescription")
-                )
-                .otherwise("Other")
-            )
-            .withColumn(
-                "ProductStyleDescription",
-                sqlf.when(
-                    sqlf.col("pos.ProductStyleDescription").isin(["Food", "Beverage"]),
-                    sqlf.col("pos.ProductStyleDescription")
-                )
-                .otherwise("Other")
-            )
+            .select([
+                "pos.*",
+                "EPH.MarketedProductDescription",
+                "EPH.MarketedProductId"
+            ])
         )
 
     def overlap(self):
