@@ -83,11 +83,12 @@ class Profiler(object):
         self.pos = (
             spark
             .table("fkwan.pos_line_item")
+            .alias("pos")
             .filter(
-                sqlf.col("AccountId").isNotNull() |
-                sqlf.col("FirstPaymentToken").isNotNull()
+                sqlf.col("pos.AccountId").isNotNull() |
+                sqlf.col("pos.FirstPaymentToken").isNotNull()
             )
-            .filter(sqlf.col("BusinessDate").between(self.date_range[0], self.date_range[1]))
+            .filter(sqlf.col("pos.BusinessDate").between(self.date_range[0], self.date_range[1]))
             .join(
                 spark
                 .table("edap_pub_productitem.enterprise_product_hierarchy")
@@ -98,30 +99,30 @@ class Profiler(object):
             .withColumn(
                 "Customer_Type",
                 sqlf.when(
-                    sqlf.col("AccountId").isNotNull(), "SR"
+                    sqlf.col("pos.AccountId").isNotNull(), "SR"
                 )
                 .otherwise("Token")
             )
             .withColumn(
                 "Id",
                 sqlf.when(
-                    sqlf.col("AccountId").isNotNull(), sqlf.col("AccountId")
+                    sqlf.col("pos.AccountId").isNotNull(), sqlf.col("pos.AccountId")
                 )
-                .otherwise(sqlf.col("FirstPaymentToken"))
+                .otherwise(sqlf.col("pos.FirstPaymentToken"))
             )
             .withColumn(
                 "ProductCategoryDescription",
                 sqlf.when(
-                    sqlf.col("ProductTypeDescription").isin(["Food", "Beverage"]),
-                    sqlf.col("ProductCategoryDescription")
+                    sqlf.col("pos.ProductTypeDescription").isin(["Food", "Beverage"]),
+                    sqlf.col("pos.ProductCategoryDescription")
                 )
                 .otherwise("Other")
             )
             .withColumn(
                 "ProductStyleDescription",
                 sqlf.when(
-                    sqlf.col("ProductStyleDescription").isin(["Food", "Beverage"]),
-                    sqlf.col("ProductStyleDescription")
+                    sqlf.col("pos.ProductStyleDescription").isin(["Food", "Beverage"]),
+                    sqlf.col("pos.ProductStyleDescription")
                 )
                 .otherwise("Other")
             )
