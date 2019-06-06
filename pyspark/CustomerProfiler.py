@@ -68,7 +68,7 @@ class Customer(object):
 
 
 class Profiler(object):
-    def __init__(self, customers, date_range):
+    def __init__(self, spark, customers, date_range):
         self.pf_spdf = union_all(*customers)
         self.start_dates_pd = [a for a in customers.start_dates_pd]
         self.end_dates_pd = [a for a in customers.end_dates_pd]
@@ -78,6 +78,47 @@ class Profiler(object):
         self.pch_frq_min = [a for a in customers.pch_frq_min]
         self.pch_frq_max = [a for a in customers.pch_frq_max]
         self.date_range = date_range
+
+        # POS
+        self.pos = (
+            spark
+            .table("fkwan.pos_line_item")
+            .filter(
+                sqlf.col("AccountId").isNotNull() |
+                sqlf.col("FirstPaymentToken").isNotNull()
+            )
+            .filter(sqlf.col("BusinessDate").between(self.date_range[0], self.date_range[1]))
+            .withColumn(
+                "Customer_Type",
+                sqlf.when(
+                    sqlf.col("AccountId").isNotNull(), "SR"
+                )
+                .otherwise("Token")
+            )
+            .withColumn(
+                "Id",
+                sqlf.when(
+                    sqlf.col("AccountId").isNotNull(), sqlf.col("AccountId")
+                )
+                    .otherwise(sqlf.col("FirstPaymentToken"))
+            )
+            .withColumn(
+                "ProductCategoryDescription",
+                sqlf.when(
+                    sqlf.col("ProductTypeDescription").isin(["Food", "Beverage"]),
+                    sqlf.col("ProductCategoryDescription")
+                )
+                .otherwise("Other")
+            )
+            .withColumn(
+                "ProductStyleDescription",
+                sqlf.when(
+                    sqlf.col("ProductStyleDescription").isin(["Food", "Beverage"]),
+                    sqlf.col("ProductStyleDescription")
+                )
+                .otherwise("Other")
+            )
+        )
 
     def overlap(self):
         # Indicator
