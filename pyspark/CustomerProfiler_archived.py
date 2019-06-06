@@ -47,7 +47,7 @@ class CustomerProfiler(object):
             .withColumn(
                 "ProductStyleDescription",
                 sqlf.when(
-                    sqlf.col("ProductStyleDescription").isin(["Food", "Beverage"]),
+                    sqlf.col("ProductTypeDescription").isin(["Food", "Beverage"]),
                     sqlf.col("ProductStyleDescription")
                 )
                 .otherwise("Other")
