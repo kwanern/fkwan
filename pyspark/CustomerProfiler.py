@@ -88,6 +88,13 @@ class Profiler(object):
                 sqlf.col("FirstPaymentToken").isNotNull()
             )
             .filter(sqlf.col("BusinessDate").between(self.date_range[0], self.date_range[1]))
+            .join(
+                spark
+                .table("edap_pub_productitem.enterprise_product_hierarchy")
+                .alias("EPH"),
+                sqlf.col("pos.ItemNumber") == sqlf.col("EPH.ItemId"),
+                how="inner"
+            )
             .withColumn(
                 "Customer_Type",
                 sqlf.when(
@@ -100,7 +107,7 @@ class Profiler(object):
                 sqlf.when(
                     sqlf.col("AccountId").isNotNull(), sqlf.col("AccountId")
                 )
-                    .otherwise(sqlf.col("FirstPaymentToken"))
+                .otherwise(sqlf.col("FirstPaymentToken"))
             )
             .withColumn(
                 "ProductCategoryDescription",
@@ -118,6 +125,12 @@ class Profiler(object):
                 )
                 .otherwise("Other")
             )
+            .select([
+                "pos.*",
+                "Id",
+                "EPH.MarketedProductDescription",
+                "EPH.MarketedProductId"
+            ])
         )
 
     def overlap(self):
