@@ -4,8 +4,8 @@ from .udf import concat_string_arrays, union_all
 
 class Customer(object):
     def __init__(self, spark, products):
-        self.start_dates_pd = pd.to_datetime(products["Promo_Start_Date"]).date()
-        self.end_dates_pd = pd.to_datetime(products["Promo_End_Date"]).date()
+        self.start_dates_pd = products["Promo_Start_Date"]
+        self.end_dates_pd = products["Promo_End_Date"]
         self.products_names = products["Product_Name"]
         self.level = products["EPH_level"]
         self.products_id = products["Id"]
@@ -29,7 +29,7 @@ class Customer(object):
                     sqlf.col("AccountId").isNotNull() |
                     sqlf.col("FirstPaymentToken").isNotNull()
                 ) &
-                sqlf.col("BusinessDate").between(str(self.start_dates_pd), str(self.end_dates_pd))
+                sqlf.col("BusinessDate").between(self.start_dates_pd, self.end_dates_pd)
             )
             .withColumn(
                 "Id",
