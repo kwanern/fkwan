@@ -151,7 +151,8 @@ class Profiler(object):
             .alias(re.sub("\s", "_", self.products_names[i])) for i in range(0, len(self.products_id))]
 
         ind = (
-            self.pf_spdf.alias("ind")
+            self.pf_spdf
+            .alias("ind")
             .join(
                 self.pos.alias("pos"),
                 sqlf.col("pos.Id") == sqlf.col("ind.Id"),

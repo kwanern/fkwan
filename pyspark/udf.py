@@ -1,5 +1,5 @@
 from ..libraries import *
-from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.functions import pandas_udf, PandasUDFType, udf
 from functools import reduce
 from pyspark.sql import DataFrame
 
@@ -7,7 +7,8 @@ from pyspark.sql import DataFrame
 def union_all(*dfs):
     return reduce(DataFrame.union, dfs)
 
-@pandas_udf("string", PandasUDFType.SCALAR)
+
+@udf("string")
 def concat_string_arrays(*ls):
     """
         This function concat multiple string columns into one column with separator '&'
