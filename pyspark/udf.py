@@ -5,6 +5,15 @@ from pyspark.sql import DataFrame
 
 
 def union_all(*dfs):
+    """
+        This function union multiple spark dataframe
+
+        :param dfs: array of spark dataframe
+        :return: spark dataframe
+
+        Examples:
+        >>> union_all(*[a.pf_spdf for a in customers])
+    """
     return reduce(DataFrame.union, dfs)
 
 
