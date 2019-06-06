@@ -126,12 +126,6 @@ class Profiler(object):
                 )
                 .otherwise("Other")
             )
-            .select([
-                "pos.*",
-                "Id",
-                "EPH.MarketedProductDescription",
-                "EPH.MarketedProductId"
-            ])
         )
 
     def overlap(self):
