@@ -55,7 +55,7 @@ class Customer(object):
             )
             .withColumn(
                 "Product",
-                self.products_names
+                sqlf.lit(self.products_names)
             )
             .groupBy("Id", "Product")
             .agg(
