@@ -4,6 +4,26 @@ from .udf import concat_string_arrays, union_all
 
 class Customer(object):
     def __init__(self, spark, products):
+        """
+            This is a class that cohort a group of customers based on their
+            purchased frequency of a specific product.
+
+            :param spark: spark initialization object
+            :param products: dictionary
+            :return: Customer class object
+
+            Examples:
+            >>> product = {
+            >>>             "Promo_Start_Date": "2019-03-05",
+            >>>             "Promo_End_Date": "2019-04-29",
+            >>>             "Product_Name": "Caramel Cloud",
+            >>>             "EPH_level": "NotionalProductlid",
+            >>>             "Id": ["3067"],
+            >>>             "Purchased_Freq_Min": 1,
+            >>>             "Purchased_Freq_Max": 999999
+            >>>           }
+            >>> caramel_cloud = Customer(spark, products["Caramel Cloud"])
+        """
         self.start_dates_pd = products["Promo_Start_Date"]
         self.end_dates_pd = products["Promo_End_Date"]
         self.products_names = products["Product_Name"]
@@ -69,6 +89,21 @@ class Customer(object):
 
 class Profiler(object):
     def __init__(self, spark, customers, date_range):
+        """
+            This is a class that combines multiple customer classes.
+
+            :param spark: spark initialization object
+            :param customers: Customer class
+            :return: Profiler class object
+
+            Examples:
+            >>> cust_prof = cp.Profiler(spark,
+            >>>         [
+            >>>           caramel_cloud,
+            >>>           cinnamon_cloud
+            >>>         ],
+            >>>         date_range = ("2018-02-26", "2019-05-26"))
+        """
         self.pf_spdf = union_all(*[a.pf_spdf for a in customers])
         self.start_dates_pd = [a.start_dates_pd for a in customers]
         self.end_dates_pd = [a.end_dates_pd for a in customers]
@@ -139,6 +174,14 @@ class Profiler(object):
         )
 
     def overlap(self):
+        """
+            This method generates customer profile with overlap product segments.
+
+            :return: spark dataframe
+
+            Examples:
+            >>> cust_prof_overlap = cust_prof.overlap()
+        """
         # Indicator
         exprs_ind = [
             (sqlf.max(
@@ -195,6 +238,14 @@ class Profiler(object):
         return table_overlap
 
     def individual(self):
+        """
+            This method generates customer profile with product segments.
+
+            :return: spark dataframe
+
+            Examples:
+            >>> cust_prof_indv = cust_prof.individual()
+        """
         ind = (
             self.pf_spdf
             .select(["Id", "Product"])
