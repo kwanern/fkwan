@@ -69,7 +69,7 @@ class Customer(object):
 
 class Profiler(object):
     def __init__(self, spark, customers, date_range):
-        self.pf_spdf = union_all(*[a.spdf for a in customers])
+        self.pf_spdf = union_all(*[a.pf_spdf for a in customers])
         self.start_dates_pd = [a.start_dates_pd for a in customers]
         self.end_dates_pd = [a.end_dates_pd for a in customers]
         self.products_names = [a.product_names for a in customers]
