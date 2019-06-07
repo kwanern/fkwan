@@ -37,13 +37,6 @@ class Customer(object):
             spark
             .table("fkwan.pos_line_item")
             .alias("pos")
-            .join(
-                spark
-                .table("edap_pub_productitem.enterprise_product_hierarchy")
-                .alias("EPH"),
-                sqlf.col("pos.ItemNumber") == sqlf.col("EPH.ItemId"),
-                how="inner"
-            )
             .filter(
                 (
                     sqlf.col("AccountId").isNotNull() |
@@ -58,12 +51,6 @@ class Customer(object):
                 )
                 .otherwise(sqlf.col("FirstPaymentToken"))
             )
-            .select([
-                "pos.*",
-                "Id",
-                "EPH.MarketedProductDescription",
-                "EPH.MarketedProductId"
-            ])
         )
 
         # Select Cohort
@@ -114,6 +101,23 @@ class Profiler(object):
         self.pch_frq_max = [a.pch_frq_max for a in customers]
         self.date_range = date_range
 
+        self.var = ([
+            "pos.FiscalYearNumber",
+            "pos.FiscalPeriodInYearNumber",
+            "Customer_Type",
+            "pos.Id",
+            "Product",
+            "ProductCategoryDescription",
+            "ProductStyleDescription",
+            "NotionalProductDescription",
+            "pos.NetDiscountedSalesAmount",
+            "pos.TransactionId",
+            "pos.NetDiscountedSalesQty",
+            "pos.sugars",
+            "pos.calories",
+            "pos.LoyaltyMemberTenureDays"
+        ])
+
         # POS
         self.pos = (
             spark
@@ -155,21 +159,29 @@ class Profiler(object):
             )
         )
 
-        # Join EPH
+        # Join Nutrition
         self.pos = (
             self.pos
             .alias("pos")
             .join(
                 spark
-                .table("edap_pub_productitem.enterprise_product_hierarchy")
-                .alias("EPH"),
-                sqlf.col("pos.ItemNumber") == sqlf.col("EPH.ItemId"),
-                how="inner"
+                .table("ttran.product_nutrition")
+                .alias("nutrition"),
+                sqlf.col("pos.ItemNumber") == sqlf.col("nutrition.sku"),
+                how="left"
+            )
+            .join(
+                spark
+                .table("edap_pub_customer.customer360_behavior_restricted")
+                .alias("cust"),
+                sqlf.col("pos.Id") == sqlf.col("cust.AccountId"),
+                how="left"
             )
             .select([
                 "pos.*",
-                "EPH.MarketedProductDescription",
-                "EPH.MarketedProductId"
+                "nutrition.sugars",
+                "nutrition.calories",
+                "cust.LoyaltyMemberTenureDays"
             ])
         )
 
@@ -205,21 +217,6 @@ class Profiler(object):
             .agg(*exprs_ind)
         )
 
-        # Result Table
-        grp_var = ([
-            "pos.FiscalYearNumber",
-            "pos.FiscalPeriodInYearNumber",
-            "Customer_Type",
-            "pos.Id",
-            "Product",
-            "ProductCategoryDescription",
-            "ProductStyleDescription",
-            "NotionalProductDescription",
-            "pos.NetDiscountedSalesAmount",
-            "pos.TransactionId",
-            "pos.NetDiscountedSalesQty"
-        ])
-
         table_overlap = (
             self.pos.alias("pos")
             .join(
@@ -231,7 +228,7 @@ class Profiler(object):
                 "Product",
                 concat_string_arrays(*[re.sub("\s", "_", i) for i in self.products_names])
             )
-            .select(grp_var)
+            .select(self.var)
             .filter(sqlf.col("Product") != '')
         )
 
@@ -252,21 +249,6 @@ class Profiler(object):
             .distinct()
         )
 
-        # Result Table
-        grp_var = ([
-            "pos.FiscalYearNumber",
-            "pos.FiscalPeriodInYearNumber",
-            "Customer_Type",
-            "pos.Id",
-            "Product",
-            "ProductCategoryDescription",
-            "ProductStyleDescription",
-            "NotionalProductDescription",
-            "pos.NetDiscountedSalesAmount",
-            "pos.TransactionId",
-            "pos.NetDiscountedSalesQty"
-        ])
-
         table_a = (
             self.pos.alias("pos")
             .join(
@@ -274,7 +256,7 @@ class Profiler(object):
                 sqlf.col("pos.Id") == sqlf.col("ind.Id"),
                 how="inner"
             )
-            .select(grp_var)
+            .select(self.var)
             .filter(sqlf.col("Product") != '')
         )
 
