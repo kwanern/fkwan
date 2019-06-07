@@ -75,12 +75,13 @@ class Customer(object):
 
 
 class Profiler(object):
-    def __init__(self, spark, customers, date_range):
+    def __init__(self, spark, customers, date_range, StyleLevel=False):
         """
             This is a class that combines multiple customer classes.
 
             :param spark: spark initialization object
             :param customers: Customer class
+            :param Stylelevel: Return ProductStyleDescription (more granular)
             :return: Profiler class object
 
             Examples:
@@ -108,7 +109,6 @@ class Profiler(object):
             "pos.Id",
             "Product",
             "ProductCategoryDescription",
-            "ProductStyleDescription",
             "NotionalProductDescription",
             "pos.NetDiscountedSalesAmount",
             "pos.TransactionId",
@@ -117,6 +117,9 @@ class Profiler(object):
             "pos.calories",
             "pos.LoyaltyMemberTenureDays"
         ])
+
+        if StyleLevel:
+            self.var.append("ProductStyleDescription")
 
         # POS
         self.pos = (
