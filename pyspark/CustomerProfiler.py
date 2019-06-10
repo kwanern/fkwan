@@ -199,6 +199,7 @@ class Profiler(object):
             >>> cust_prof.details(spark)
         """
         cols = [""] + self.products_names
+        cols = [re.sub("\s", "_", i) for i in cols]
         fields = [(StructField(field, StringType(), True)) for field in cols]
         schema = StructType(fields)
 
@@ -211,7 +212,7 @@ class Profiler(object):
                 ["Max Units Purchased"] + self.pch_frq_max,
                 ["Id"] + self.products_id
             ],
-            columns=[re.sub("\s", "_", i) for i in cols]
+            columns=cols
         )
         return self.spark.createDataFrame(df, schema)
 
