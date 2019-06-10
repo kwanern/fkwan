@@ -187,7 +187,11 @@ class Profiler(object):
             ])
         )
 
-    def details(self):
+    def details(self, spark):
+        cols = [""] + self.products_names
+        fields = [(StructField(field, StringType(), True)) for field in cols]
+        schema = StructType(fields)
+
         df = pd.DataFrame(
             [
                 ["Cohort Start Date"] + self.start_dates_pd,
@@ -197,9 +201,9 @@ class Profiler(object):
                 ["Max Units Purchased"] + self.pch_frq_max,
                 ["d"] + self.products_id
             ],
-            columns=[""] + self.products_names
+            columns=cols
         )
-        return df
+        return spark.createDataFrame(df, schema)
 
     def overlap(self):
         """
