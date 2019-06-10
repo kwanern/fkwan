@@ -196,9 +196,9 @@ class Profiler(object):
             :return: spark dataframe
 
             Examples:
-            >>> cust_prof.details(spark)
+            >>> cust_prof.details()
         """
-        cols = [""] + self.products_names
+        cols = ["Details"] + self.products_names
         cols = [re.sub("\s", "_", i) for i in cols]
         fields = [(StructField(field, StringType(), True)) for field in cols]
         schema = StructType(fields)
