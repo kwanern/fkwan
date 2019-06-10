@@ -188,6 +188,15 @@ class Profiler(object):
         )
 
     def details(self, spark):
+        """
+            This method generates customer profile cohort details.
+
+            :param spark: spark initialization object
+            :return: spark dataframe
+
+            Examples:
+            >>> cust_prof.details(spark)
+        """
         cols = [""] + self.products_names
         fields = [(StructField(field, StringType(), True)) for field in cols]
         schema = StructType(fields)
@@ -199,7 +208,7 @@ class Profiler(object):
                 ["EPH Level"] + self.level,
                 ["Min Units Purchased"] + self.pch_frq_min,
                 ["Max Units Purchased"] + self.pch_frq_max,
-                ["d"] + self.products_id
+                ["d"] + [re.sub("\s", "_", i) for i in self.products_names]
             ],
             columns=cols
         )
