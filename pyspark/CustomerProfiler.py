@@ -103,6 +103,7 @@ class Profiler(object):
         self.pch_frq_min = [a.pch_frq_min for a in customers]
         self.pch_frq_max = [a.pch_frq_max for a in customers]
         self.date_range = date_range
+        self.spark = spark
 
         self.var = ([
             "pos.FiscalYearNumber",
@@ -122,7 +123,7 @@ class Profiler(object):
 
         # POS
         self.pos = (
-            spark
+            self.spark
             .table("fkwan.pos_line_item")
             .filter(
                 sqlf.col("AccountId").isNotNull() |
@@ -187,7 +188,7 @@ class Profiler(object):
             ])
         )
 
-    def details(self, spark):
+    def details(self):
         """
             This method generates customer profile cohort details.
 
@@ -208,11 +209,11 @@ class Profiler(object):
                 ["EPH Level"] + self.level,
                 ["Min Units Purchased"] + self.pch_frq_min,
                 ["Max Units Purchased"] + self.pch_frq_max,
-                ["d"] + [re.sub("\s", "_", i) for i in self.products_names]
+                ["Id"] + self.products_id
             ],
-            columns=cols
+            columns=[re.sub("\s", "_", i) for i in cols]
         )
-        return spark.createDataFrame(df, schema)
+        return self.spark.createDataFrame(df, schema)
 
     def overlap(self):
         """
