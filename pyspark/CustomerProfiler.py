@@ -187,6 +187,20 @@ class Profiler(object):
             ])
         )
 
+    def details(self):
+        df = pd.DataFrame(
+            [
+                ["Cohort Start Date"] + self.start_dates_pd,
+                ["Cohort End Date"] + self.end_dates_pd,
+                ["EPH Level"] + self.level,
+                ["Min Units Purchased"] + self.pch_frq_min,
+                ["Max Units Purchased"] + self.pch_frq_max,
+                ["d"] + self.products_id
+            ],
+            columns=[""] + self.products_names
+        )
+        return df
+
     def overlap(self):
         """
             This method generates customer profile with overlap product segments.
