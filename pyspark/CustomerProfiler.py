@@ -75,7 +75,7 @@ class Customer(object):
 
 
 class Profiler(object):
-    def __init__(self, spark, customers, date_range, level=["ProductCategoryDescription"]):
+    def __init__(self, spark, customers, date_range):
         """
             This is a class that combines multiple customer classes.
 
@@ -90,8 +90,7 @@ class Profiler(object):
             >>>           caramel_cloud,
             >>>           cinnamon_cloud
             >>>         ],
-            >>>         date_range = ("2018-02-26", "2019-05-26"),
-            >>>         level = ["ProductCategoryDescription", "ProductStyleDescription"]
+            >>>         date_range = ("2018-02-26", "2019-05-26")
             >>> )
         """
         self.pf_spdf = union_all(*[a.pf_spdf for a in customers])
@@ -111,6 +110,8 @@ class Profiler(object):
             "Customer_Type",
             "pos.Id",
             "Product",
+            "ProductCategoryDescription",
+            "ProductStyleDescription",
             "pos.NetDiscountedSalesAmount",
             "pos.TransactionId",
             "pos.NetDiscountedSalesQty",
@@ -118,8 +119,6 @@ class Profiler(object):
             "pos.calories",
             "pos.LoyaltyMemberTenureDays"
         ])
-
-        self.var.extend(level)
 
         # POS
         self.pos = (
