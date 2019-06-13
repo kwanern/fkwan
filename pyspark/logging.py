@@ -22,7 +22,7 @@ class TimeLog(object):
 
     def __init__(self, spark, path):
         """
-            This is a class that log progress, but in spark that enables delta table streaming.
+            This is a class that log progress. Also enables spark delta table streaming.
 
             :param spark: spark initialization object
             :param path: string
