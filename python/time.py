@@ -27,3 +27,17 @@ def date_range(start_date, end_date):
         >>> date_range('20190101', '20190201')
     """
     return [int(d.strftime('%Y%m%d')) for d in pd.date_range(start_date, end_date)]
+
+
+# Convert time delta to days_hours_minutes
+def convert_td(td):
+    """
+        This function returns timedelta attributes
+
+        :param ts: timedelta
+        :return: array of integer
+
+        Examples:
+        >>> convert_td(dateime.now() - dateime.now())
+    """
+    return td.days, td.seconds // 3600, (td.seconds // 60) % 60
