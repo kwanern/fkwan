@@ -71,7 +71,7 @@ class Customer(object):
                     sqlf.when(
                         sqlf.col("BusinessDate").between(str(self.start_dates_pd), str(self.end_dates_pd)),
                         sqlf.col("pos.GrossLineItemQty")
-                    )
+                    ) \
                         .otherwise(0)
                 ).alias("Qty"),
                 sqlf.countDistinct(
@@ -79,7 +79,7 @@ class Customer(object):
                         sqlf.col("BusinessDate") \
                             .between(str(self.start_dates_pd + days(-31)), str(self.end_dates_pd + days(-1))),
                         sqlf.col("pos.TransactionId")
-                    )
+                    ) \
                         .otherwise(None)
                 ).alias("P30_Trans_Count")
             )
