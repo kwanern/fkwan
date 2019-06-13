@@ -100,6 +100,21 @@ class Customer(object):
         )
 
     def indicator(self, ind):
+        """
+           This is method to add additional indicator column for benchmark.
+
+           :param ind: dictionary
+
+            Examples:
+            >>> indicator = {
+            >>>>             "Indicator_Start_Date": "2019-03-31",
+            >>>>             "Indicator_End_Date": "2019-04-29",
+            >>>>             "EPH_level": "NotionalProductlid"
+            >>>>             "Id": ["4017"],
+            >>>>             "Indicator_Label": "P1M Bought Refresher"
+            >>>>            }
+            >>> caramel_cloud = Customer(spark, products["Caramel Cloud"]).indicator(indicator)
+        """
         indicator_df = (
             self.pos
             .filter(
