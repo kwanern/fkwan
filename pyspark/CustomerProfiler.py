@@ -1,5 +1,6 @@
 from ..libraries.__init__ import *
 from .udf import concat_string_arrays, union_all
+from ..python.time import days
 
 
 class Customer(object):
@@ -24,8 +25,8 @@ class Customer(object):
             >>>           }
             >>> caramel_cloud = Customer(spark, products["Caramel Cloud"])
         """
-        self.start_dates_pd = products["Promo_Start_Date"]
-        self.end_dates_pd = products["Promo_End_Date"]
+        self.start_dates_pd = pd.to_datetime(products["Promo_Start_Date"]).date()
+        self.end_dates_pd = pd.to_datetime(products["Promo_End_Date"]).date()
         self.products_names = products["Product_Name"]
         self.level = products["EPH_level"]
         self.products_id = products["Id"]
@@ -42,7 +43,7 @@ class Customer(object):
                     sqlf.col("AccountId").isNotNull() |
                     sqlf.col("FirstPaymentToken").isNotNull()
                 ) &
-                sqlf.col("BusinessDate").between(self.start_dates_pd, self.end_dates_pd)
+                sqlf.col("BusinessDate").between(str(self.start_dates_pd), str(self.end_dates_pd))
             )
             .withColumn(
                 "Id",
@@ -57,7 +58,7 @@ class Customer(object):
         self.pf_spdf = (
             pos
             .filter(
-                sqlf.col("BusinessDate").between(str(min(self.start_dates_pd)), str(max(self.end_dates_pd))) &
+                sqlf.col("BusinessDate").between(str(self.start_dates_pd + days(-31)), str(self.end_dates_pd)) &
                 sqlf.col(self.level).isin(self.products_id)
             )
             .withColumn(
@@ -66,11 +67,36 @@ class Customer(object):
             )
             .groupBy("Id", "Product")
             .agg(
-                sqlf.sum("pos.GrossLineItemQty").alias("Qty")
+                sqlf.sum(
+                    sqlf.when(
+                        sqlf.col("BusinessDate").between(str(self.start_dates_pd), str(self.end_dates_pd)),
+                        sqlf.col("pos.GrossLineItemQty")
+                    )
+                        .otherwise(0)
+                ).alias("Qty"),
+                sqlf.countDistinct(
+                    sqlf.when(
+                        sqlf.col("BusinessDate") \
+                            .between(str(self.start_dates_pd + days(-31)), str(self.end_dates_pd + days(-1))),
+                        sqlf.col("pos.TransactionId")
+                    )
+                        .otherwise(None)
+                ).alias("P30_Trans_Count")
             )
             .where(
                 sqlf.col("Qty").between(self.pch_frq_min, self.pch_frq_max)
             )
+        )
+
+        self.pf_spdf = (
+            self.pf_spdf
+                .withColumn("P30_Trans_Freq",
+                            sqlf.when(sqlf.col("P30_Trans_Count").between(1, 2), "Active 30D, 1-2") \
+                            .when(sqlf.col("P30_Trans_Count").between(3, 5), "Active 30D, 3-5") \
+                            .when(sqlf.col("P30_Trans_Count").between(6, 9), "Active 30D, 6-9") \
+                            .when(sqlf.col("P30_Trans_Count") >= 10, "Active 30D, 10+") \
+                            .otherwise("0")
+                            )
         )
 
 
@@ -109,6 +135,7 @@ class Profiler(object):
             "pos.FiscalPeriodInYearNumber",
             "Customer_Type",
             "pos.Id",
+            "P30_Trans_Freq",
             "Product",
             "ProductCategoryDescription",
             "ProductStyleDescription",
@@ -237,14 +264,14 @@ class Profiler(object):
 
         ind = (
             self.pf_spdf
-            .alias("ind")
-            .join(
+                .alias("ind")
+                .join(
                 self.pos.alias("pos"),
                 sqlf.col("pos.Id") == sqlf.col("ind.Id"),
                 how="left"
             )
-            .groupBy("ind.Id")
-            .agg(*exprs_ind)
+                .groupBy("ind.Id", "ind.P30_Trans_Freq")
+                .agg(*exprs_ind)
         )
 
         table_overlap = (
@@ -275,8 +302,8 @@ class Profiler(object):
         """
         ind = (
             self.pf_spdf
-            .select(["Id", "Product"])
-            .distinct()
+                .select(["Id", "Product", "P30_Trans_Freq"])
+                .distinct()
         )
 
         table_a = (
