@@ -73,7 +73,7 @@ class TimeLog(object):
             This method display streaming log file
 
             Examples:
-            >>> time_log.streaming()
+            >>> display(time_log.streaming())
         """
         df = self.spark.sql("SELECT * FROM TimeLog")
-        return display(df)
+        return df
