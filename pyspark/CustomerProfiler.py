@@ -32,9 +32,10 @@ class Customer(object):
         self.products_id = products["Id"]
         self.pch_frq_min = products["Purchased_Freq_Min"]
         self.pch_frq_max = products["Purchased_Freq_Max"]
+        self.spark = spark
 
         # Join EPH
-        pos = (
+        self.pos = (
             spark
             .table("fkwan.pos_line_item")
             .alias("pos")
@@ -42,8 +43,7 @@ class Customer(object):
                 (
                     sqlf.col("AccountId").isNotNull() |
                     sqlf.col("FirstPaymentToken").isNotNull()
-                ) &
-                sqlf.col("BusinessDate").between(str(self.start_dates_pd), str(self.end_dates_pd))
+                )
             )
             .withColumn(
                 "Id",
@@ -56,7 +56,7 @@ class Customer(object):
 
         # Select Cohort
         self.pf_spdf = (
-            pos
+            self.pos
             .filter(
                 sqlf.col("BusinessDate").between(str(self.start_dates_pd + days(-31)), str(self.end_dates_pd)) &
                 sqlf.col(self.level).isin(self.products_id)
@@ -99,9 +99,47 @@ class Customer(object):
                             )
         )
 
+    def indicator(self, ind):
+        indicator_df = (
+            self.pos
+            .filter(
+                sqlf.col("BusinessDate").between(ind["Indicator_Start_Date"], ind["Indicator_End_Date"]) &
+                sqlf.col(ind["EPH_level"]).isin(ind["Id"])
+            )
+            .select(
+                ["Id"]
+            )
+            .distinct()
+        )
+
+        self.pf_spdf = (
+            self.pf_spdf
+            .aias("A")
+            .join(
+                indicator_df
+                .alias("ind"),
+                sqlf.col("A.Id") == sqlf.col("ind.Id"),
+                how="left"
+            )
+            .withColumn(
+                "Indicator",
+                sqlf.when(
+                    sqlf.col("ind.Id").isNotNull(),
+                    ind["Indicator_Label"]
+                )
+                .otherwise("0")
+            )
+            .select([
+                "A.Id",
+                "A.Product",
+                "A.P30_Trans_Count",
+                "Indicator"
+            ])
+        )
+
 
 class Profiler(object):
-    def __init__(self, spark, customers, date_range):
+    def __init__(self, spark, customers, date_range, indicator=False):
         """
             This is a class that combines multiple customer classes.
 
@@ -146,6 +184,9 @@ class Profiler(object):
             "pos.calories",
             "pos.LoyaltyMemberTenureDays"
         ])
+
+        if indicator:
+            self.var.append("Indicator")
 
         # POS
         self.pos = (
