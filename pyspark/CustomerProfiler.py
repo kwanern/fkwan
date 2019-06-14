@@ -129,7 +129,7 @@ class Customer(object):
 
         self.pf_spdf = (
             self.pf_spdf
-            .aias("A")
+            .alias("A")
             .join(
                 indicator_df
                 .alias("ind"),
@@ -173,8 +173,8 @@ class Profiler(object):
             >>> )
         """
         self.pf_spdf = union_all(*[a.pf_spdf for a in customers])
-        self.start_dates_pd = [a.start_dates_pd for a in customers]
-        self.end_dates_pd = [a.end_dates_pd for a in customers]
+        self.start_dates_pd = [str(a.start_dates_pd) for a in customers]
+        self.end_dates_pd = [str(a.end_dates_pd) for a in customers]
         self.products_names = [a.products_names for a in customers]
         self.level = [a.level for a in customers]
         self.products_id = [a.products_id for a in customers]
