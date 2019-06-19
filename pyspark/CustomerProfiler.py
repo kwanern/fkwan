@@ -148,6 +148,7 @@ class Customer(object):
                 "A.Id",
                 "A.Product",
                 "A.P30_Trans_Count",
+                "A.P30_Trans_Freq",
                 "Indicator"
             ])
         )
