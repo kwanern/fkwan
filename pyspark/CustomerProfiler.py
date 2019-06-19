@@ -321,14 +321,14 @@ class Profiler(object):
 
         ind = (
             self.pf_spdf
-                .alias("ind")
-                .join(
+            .alias("ind")
+            .join(
                 self.pos.alias("pos"),
                 sqlf.col("pos.Id") == sqlf.col("ind.Id"),
                 how="left"
             )
-                .groupBy("ind.Id", "ind.P30_Trans_Freq")
-                .agg(*exprs_ind)
+            .groupBy("ind.Id", "ind.P30_Trans_Freq", "ind.Indicator")
+            .agg(*exprs_ind)
         )
 
         table_overlap = (
