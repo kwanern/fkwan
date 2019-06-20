@@ -183,6 +183,7 @@ class Profiler(object):
         self.pch_frq_max = [a.pch_frq_max for a in customers]
         self.date_range = date_range
         self.spark = spark
+        self.indicator = indicator
 
         self.var = ([
             "pos.FiscalYearNumber",
@@ -201,7 +202,7 @@ class Profiler(object):
             "pos.LoyaltyMemberTenureDays"
         ])
 
-        if indicator:
+        if self.indicator:
             self.var.append("Indicator")
 
         # POS
@@ -319,6 +320,13 @@ class Profiler(object):
                 .otherwise(None)))
             .alias(re.sub("\s", "_", self.products_names[i])) for i in range(0, len(self.products_id))]
 
+        grp_var = [
+            "ind.Id", "ind.P30_Trans_Freq"
+        ]
+
+        if self.indicator:
+            grp_var.append("ind.Indicator")
+
         ind = (
             self.pf_spdf
             .alias("ind")
@@ -327,7 +335,7 @@ class Profiler(object):
                 sqlf.col("pos.Id") == sqlf.col("ind.Id"),
                 how="left"
             )
-            .groupBy("ind.Id", "ind.P30_Trans_Freq", "ind.Indicator")
+            .groupBy(grp_var)
             .agg(*exprs_ind)
         )
 
