@@ -215,6 +215,7 @@ class Profiler(object):
                 "NotionalProductlId",
                 "pos.NetDiscountedSalesAmount",
                 "pos.TransactionId",
+                "pos.GrossLineItemQty",
                 "pos.NetDiscountedSalesQty",
                 "pos.sugars",
                 "pos.calories",
