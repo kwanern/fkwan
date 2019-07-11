@@ -212,7 +212,7 @@ class Profiler(object):
                 "ProductStyleDescription",
                 "ProductStyleId",
                 "NotionalProductDescription",
-                "NotionalProductId",
+                "NotionalProductlId",
                 "pos.NetDiscountedSalesAmount",
                 "pos.TransactionId",
                 "pos.NetDiscountedSalesQty",
