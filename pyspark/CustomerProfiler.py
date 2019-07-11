@@ -155,13 +155,14 @@ class Customer(object):
 
 
 class Profiler(object):
-    def __init__(self, spark, customers, date_range, indicator=False):
+    def __init__(self, spark, customers, date_range, indicator=False, granularity="Period"):
         """
             This is a class that combines multiple customer classes.
 
             :param spark: spark initialization object
             :param customers: Customer class
-            :param level: array of levels
+            :param indicator: Boolean
+            :param granularity: string ("Period", "Week", "Day")
             :return: Profiler class object
 
             Examples:
@@ -185,24 +186,41 @@ class Profiler(object):
         self.spark = spark
         self.indicator = indicator
 
-        self.var = ([
-            "pos.FiscalYearNumber",
-            "pos.FiscalPeriodInYearNumber",
-            "Customer_Type",
-            "pos.Id",
-            "P30_Trans_Freq",
-            "Product",
-            "ProductTypeDescription",
-            "ProductCategoryDescription",
-            "ProductStyleDescription",
-            "NotionalProductDescription",
-            "pos.NetDiscountedSalesAmount",
-            "pos.TransactionId",
-            "pos.NetDiscountedSalesQty",
-            "pos.sugars",
-            "pos.calories",
-            "pos.LoyaltyMemberTenureDays"
-        ])
+        if granularity == "Period":
+            date_granularity = ["pos.FiscalYearNumber", "pos.FiscalPeriodInYearNumber"]
+        elif granularity == "Week":
+            date_granularity = ["pos.FiscalYearNumber", "pos.FiscalPeriodInYearNumber", "pos.FiscalWeekInYearNumber"]
+        else:
+            date_granularity = [
+                "pos.FiscalYearNumber",
+                "pos.FiscalPeriodInYearNumber",
+                "pos.FiscalWeekInYearNumber",
+                "pos.BusinessDate"
+            ]
+
+        self.var = (
+            date_granularity +
+            [
+                "Customer_Type",
+                "pos.Id",
+                "P30_Trans_Freq",
+                "Product",
+                "ProductTypeDescription",
+                "ProductTypeId",
+                "ProductCategoryDescription",
+                "ProductCategoryId",
+                "ProductStyleDescription",
+                "ProductStyleId",
+                "NotionalProductDescription",
+                "NotionalProductId",
+                "pos.NetDiscountedSalesAmount",
+                "pos.TransactionId",
+                "pos.NetDiscountedSalesQty",
+                "pos.sugars",
+                "pos.calories",
+                "pos.LoyaltyMemberTenureDays"
+             ]
+        )
 
         if self.indicator:
             self.var.append("Indicator")
