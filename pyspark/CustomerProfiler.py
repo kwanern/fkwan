@@ -111,7 +111,8 @@ class Customer(object):
             >>>       "Indicator_End_Date": "2019-04-29",
             >>>       "EPH_level": "NotionalProductlid",
             >>>       "Id": ["4017"],
-            >>>       "Indicator_Label": "P1M Bought Refresher"
+            >>>       "Indicator_Label": ("P1M Bought Refresher", "0")
+            >>>       "Indicator_colname": "Indicator"
             >>>      }
             >>> caramel_cloud = Customer(spark, products["Caramel Cloud"]).indicator(ind)
         """
@@ -137,25 +138,25 @@ class Customer(object):
                 how="left"
             )
             .withColumn(
-                "Indicator",
+                ind["Indicator_colname"],
                 sqlf.when(
                     sqlf.col("ind.Id").isNotNull(),
-                    ind["Indicator_Label"]
+                    ind["Indicator_Label"][0]
                 )
-                .otherwise("0")
+                .otherwise(ind["Indicator_Label"][1])
             )
             .select([
                 "A.Id",
                 "A.Product",
                 "A.P30_Trans_Count",
                 "A.P30_Trans_Freq",
-                "Indicator"
+                ind["Indicator_colname"]
             ])
         )
 
 
 class Profiler(object):
-    def __init__(self, spark, customers, date_range, indicator=False, granularity="Period"):
+    def __init__(self, spark, customers, date_range, indicator=[], granularity="Period"):
         """
             This is a class that combines multiple customer classes.
 
@@ -223,8 +224,8 @@ class Profiler(object):
              ]
         )
 
-        if self.indicator:
-            self.var.append("Indicator")
+        if not self.indicator:
+            self.var.extend(self.indicator)
 
         # POS
         self.pos = (
