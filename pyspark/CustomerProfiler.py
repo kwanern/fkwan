@@ -116,17 +116,30 @@ class Customer(object):
             >>>      }
             >>> caramel_cloud = Customer(spark, products["Caramel Cloud"]).indicator(ind)
         """
-        indicator_df = (
-            self.pos
-            .filter(
-                sqlf.col("BusinessDate").between(ind["Indicator_Start_Date"], ind["Indicator_End_Date"]) &
-                sqlf.col(ind["EPH_level"]).isin(ind["Id"])
+
+        if "EPH_level" in ind.keys():
+            indicator_df = (
+                self.pos
+                .filter(
+                    sqlf.col("BusinessDate").between(ind["Indicator_Start_Date"], ind["Indicator_End_Date"]) &
+                    sqlf.col(ind["EPH_level"]).isin(ind["Id"])
+                )
+                .select(
+                    ["Id"]
+                )
+                .distinct()
             )
-            .select(
-                ["Id"]
+        else:
+            indicator_df = (
+                self.pos
+                .filter(
+                    sqlf.col("BusinessDate").between(ind["Indicator_Start_Date"], ind["Indicator_End_Date"])
+                )
+                .select(
+                    ["Id"]
+                )
+                .distinct()
             )
-            .distinct()
-        )
 
         self.pf_spdf = (
             self.pf_spdf
