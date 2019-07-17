@@ -237,7 +237,7 @@ class Profiler(object):
              ]
         )
 
-        if not self.indicator:
+        if self.indicator:
             self.var.extend(self.indicator)
 
         # POS
@@ -359,7 +359,7 @@ class Profiler(object):
             "ind.Id", "ind.P30_Trans_Freq"
         ]
 
-        if not self.indicator:
+        if self.indicator:
             grp_var.extend(self.indicator)
 
         ind = (
