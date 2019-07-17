@@ -234,7 +234,7 @@ class Profiler(object):
         )
 
         if self.indicator:
-            self.var.extend(self.indicator)
+            self.var.extend(["ind." + i for i in self.indicator])
 
         # POS
         self.pos = (
@@ -351,12 +351,10 @@ class Profiler(object):
                 .otherwise(None)))
             .alias(re.sub("\s", "_", self.products_names[i])) for i in range(0, len(self.products_id))]
 
-        grp_var = [
-            "ind.Id", "ind.P30_Trans_Freq"
-        ]
+        grp_var = ["ind.Id", "ind.P30_Trans_Freq"]
 
         if self.indicator:
-            grp_var.extend(self.indicator)
+            grp_var.extend(["ind." + i for i in self.indicator])
 
         ind = (
             self.pf_spdf
