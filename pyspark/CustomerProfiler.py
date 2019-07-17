@@ -141,6 +141,8 @@ class Customer(object):
                 .distinct()
             )
 
+        var = ["A." + i for i in self.pf_spdf.columns] + [ind["Indicator_colname"]]
+
         self.pf_spdf = (
             self.pf_spdf
             .alias("A")
@@ -158,13 +160,7 @@ class Customer(object):
                 )
                 .otherwise(ind["Indicator_Label"][1])
             )
-            .select([
-                "A.Id",
-                "A.Product",
-                "A.P30_Trans_Count",
-                "A.P30_Trans_Freq",
-                ind["Indicator_colname"]
-            ])
+            .select(var)
         )
 
 
