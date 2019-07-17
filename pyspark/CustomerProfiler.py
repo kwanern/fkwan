@@ -359,8 +359,8 @@ class Profiler(object):
             "ind.Id", "ind.P30_Trans_Freq"
         ]
 
-        if self.indicator:
-            grp_var.append("ind.Indicator")
+        if not self.indicator:
+            grp_var.extend(self.indicator)
 
         ind = (
             self.pf_spdf
