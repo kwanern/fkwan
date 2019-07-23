@@ -1,7 +1,7 @@
 from ..libraries.__init__ import *
 from .udf import concat_string_arrays, union_all
 from ..python.time import days
-
+from .CohortMetric import *
 
 class Customer(object):
     def __init__(self, spark, products):
