@@ -156,10 +156,14 @@ def engagement(promo, cohort):
         ["{0:.2f}%".format(val * 100) for val in
          (promo_customer_total_count["Existing_Count"] / promo_customer_total_count["Total_Count"]).tolist()]
     )
-    cohort_customer_total_count["Engaged_Percentage"] = cohort_customer_total_count["Engaged_Count"] / \
-                                                        promo_customer_total_count["Total_Count"]
-    cohort_customer_total_count["Not_Engaged_Percentage"] = cohort_customer_total_count["Not_Engaged_Count"] / \
-                                                            promo_customer_total_count["Total_Count"]
+    cohort_customer_total_count["Engaged_Percentage"] = pd.Series(
+        ["{0:.2f}%".format(val * 100) for val in
+         (cohort_customer_total_count["Engaged_Count"] / cohort_customer_total_count["Total_Count"]).tolist()]
+    )
+    cohort_customer_total_count["Not_Engaged_Percentage"] = pd.Series(
+        ["{0:.2f}%".format(val * 100) for val in
+         (cohort_customer_total_count["Not_Engaged_Count"] / cohort_customer_total_count["Total_Count"]).tolist()]
+    )
     promo_customer_total_count["In_Cohort_Percentage"] = pd.Series(
         ["{0:.2f}%".format(val * 100) for val in
          (cohort_customer_total_count["Engaged_Count"] / promo_customer_total_count["Total_Count"]).tolist()]
