@@ -1,6 +1,6 @@
 from ..libraries.__init__ import *
 
-def engagement(promo, cohort):
+def engagement(spark, promo, cohort):
     """
         This is a function that returns the cohort metrics such as engagement rate and in cohort percentage.
 
