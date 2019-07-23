@@ -1,6 +1,6 @@
 from ..libraries.__init__ import *
 
-def engagement(spark, promo, cohort):
+def engagement(promo, cohort):
     """
         This is a function that returns the cohort metrics such as engagement rate and in cohort percentage.
 
@@ -19,7 +19,7 @@ def engagement(spark, promo, cohort):
         >>>   "Purchased_Freq_Max": 999999
         >>> }
         >>> cohort = (spark.table("fkwan.Ice_Tea_Refreshers"))
-        >>> engagement(promo, cohort)
+        >>> engagement(spark, promo, cohort)
     """
     promo_spdf = (
         spark
