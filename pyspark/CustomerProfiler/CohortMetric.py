@@ -1,4 +1,6 @@
 from ...libraries import *
+from .CustomerProfiler import *
+from .Customer import *
 
 
 def engagement(spark, promo, cohort):
@@ -21,6 +23,11 @@ def engagement(spark, promo, cohort):
         >>> }
         >>> engagement(spark, promo, cohort)
     """
+
+    customers = Customer(spark, promo)
+    date_range = (promo["Promo_Start_Date"], promo["Promo_End_Date"])
+    promo_prof = Profiler(spark, [customers], date_range)
+    promo_spdf = promo_prof.individual()
 
     old_customers = (
         spark
@@ -51,7 +58,7 @@ def engagement(spark, promo, cohort):
     )
 
     promo_customer_total_count = (
-        promo
+        promo_spdf
         .alias("promo")
         .join(
             old_customers.alias("old"),
@@ -85,7 +92,7 @@ def engagement(spark, promo, cohort):
     cohort_customer_total_count = (
         cohort.alias("cohort")
         .join(
-            promo.alias("promo"),
+            promo_spdf.alias("promo"),
             sqlf.col("cohort.Id") == sqlf.col("promo.Id"),
             how="left"
         )
