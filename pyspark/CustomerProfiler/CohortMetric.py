@@ -1,10 +1,7 @@
 from ...libraries import *
 
 
-def get_spark_context():
-    return SparkSession
-
-def engagement(promo, cohort):
+def engagement(spark, promo, cohort):
     """
         This is a function that returns the cohort metrics such as engagement rate and in cohort percentage.
 
@@ -25,7 +22,6 @@ def engagement(promo, cohort):
         >>> cohort = (spark.table("fkwan.Ice_Tea_Refreshers"))
         >>> engagement(spark, promo, cohort)
     """
-    spark = SparkSession
     promo_spdf = (
         spark
         .table("fkwan.pos_line_item").alias("pos")
