@@ -1,5 +1,5 @@
-from python.time import days
-from libraries import *
+from ...python.time import days
+from ...libraries import *
 
 
 class Customer(object):
