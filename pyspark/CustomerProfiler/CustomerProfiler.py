@@ -1,4 +1,4 @@
-from ..pyspark.udf import concat_string_arrays, union_all
+from ..udf import concat_string_arrays, union_all
 from ...libraries import *
 
 
