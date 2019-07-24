@@ -3,12 +3,13 @@ from .CustomerProfiler import *
 from .Customer import *
 
 
-def engagement(spark, promo, cohort):
+def engagement(spark, promo, cohort, promo_start_dt):
     """
         This is a function that returns the cohort metrics such as engagement rate and in cohort percentage.
 
         :param promo: dictionary
         :param cohort: spark table
+        :param promo_start_dt: string start_date for new
         :return: summary text
 
         Examples:
@@ -21,19 +22,14 @@ def engagement(spark, promo, cohort):
         >>>   "Purchased_Freq_Min": 1,
         >>>   "Purchased_Freq_Max": 999999
         >>> }
-        >>> engagement(spark, promo, cohort)
+        >>> engagement(spark, promo, cohort, Promo_Start_Date)
     """
-
-    customers = Customer(spark, promo)
-    date_range = (promo["Promo_Start_Date"], promo["Promo_End_Date"])
-    promo_prof = Profiler(spark, [customers], date_range)
-    promo_spdf = promo_prof.individual()
 
     old_customers = (
         spark
         .table("fkwan.pos_line_item")
         .filter(
-            sqlf.col("BusinessDate") < promo["Promo_Start_Date"]
+            sqlf.col("BusinessDate") < promo_start_dt
         )
         .filter(
             sqlf.col("AccountId").isNotNull() |
@@ -58,7 +54,7 @@ def engagement(spark, promo, cohort):
     )
 
     promo_customer_total_count = (
-        promo_spdf
+        promo
         .alias("promo")
         .join(
             old_customers.alias("old"),
@@ -92,7 +88,7 @@ def engagement(spark, promo, cohort):
     cohort_customer_total_count = (
         cohort.alias("cohort")
         .join(
-            promo_spdf.alias("promo"),
+            promo.alias("promo"),
             sqlf.col("cohort.Id") == sqlf.col("promo.Id"),
             how="left"
         )
