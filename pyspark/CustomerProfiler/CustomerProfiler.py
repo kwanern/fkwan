@@ -259,7 +259,7 @@ class Profiler(object):
         Examples:
         >>> cust_prof_proportion = cust_prof.proportion(rng=[(1/3), (2/3)])
         """
-        if self.products_names != 2:
+        if len(self.products_names) != 2:
             return print("This function can only accept Profiler with 2 customers.")
 
         proportion = (
