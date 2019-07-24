@@ -67,7 +67,9 @@ class Profiler(object):
                 "pos.NetDiscountedSalesQty",
                 "pos.sugars",
                 "pos.calories",
-                "pos.LoyaltyMemberTenureDays"
+                "pos.LoyaltyMemberTenureDays",
+                "Beverage_Segment",
+                "Flavor_Segment"
              ]
         )
         self.grp_var = ["ind.Id", "ind.P30_Trans_Freq"]
@@ -117,7 +119,7 @@ class Profiler(object):
             )
         )
 
-        # Join Nutrition
+        # Join Nutrition and Customer Segmentation
         self.pos = (
             self.pos
             .alias("pos")
@@ -135,11 +137,104 @@ class Profiler(object):
                 sqlf.col("pos.Id") == sqlf.col("cust.AccountId"),
                 how="left"
             )
+            .join(
+                self.spark
+                .table("ttran.customer_product_segments_1y_fy19q2_v2")
+                .alias("seg"),
+                sqlf.col("pos.AccountId") == sqlf.col("seg.GuidId"),
+                how="inner"
+            )
+            .withColumn(
+                "Beverage_Segment",
+                sqlf.when(
+                    sqlf.col("seg.bev_segment") == 0,
+                    'Moderate Coffee Lover'
+                )
+                    .when(
+                    sqlf.col("seg.bev_segment") == 1,
+                    'Indulgent Coffee Drinker'
+                )
+                    .when(
+                    sqlf.col("seg.bev_segment") == 2,
+                    'Coffee Head'
+                )
+                    .when(
+                    sqlf.col("seg.bev_segment") == 3,
+                    'Sugar Lover'
+                )
+                    .when(
+                    sqlf.col("seg.bev_segment") == 5,
+                    'Health Conscious'
+                )
+                    .when(
+                    sqlf.col("seg.bev_segment") == 6,
+                    'Fun Coffee Drinker'
+                )
+                    .otherwise(None)
+            )
+                .withColumn(
+                "Flavor_Segment",
+                sqlf.when(
+                    sqlf.col("seg.flavor_segment") == 0,
+                    'Matcha'
+                )
+                    .when(
+                    sqlf.col("seg.flavor_segment") == 1,
+                    'Caramel'
+                )
+                    .when(
+                    sqlf.col("seg.flavor_segment") == 2,
+                    'WhiteChocolateMocha'
+                )
+                    .when(
+                    sqlf.col("seg.flavor_segment") == 3,
+                    'Cinnamon'
+                )
+                    .when(
+                    sqlf.col("seg.flavor_segment") == 4,
+                    'Chai'
+                )
+                    .when(
+                    sqlf.col("seg.flavor_segment") == 5,
+                    'GreenTea'
+                )
+                    .when(
+                    sqlf.col("seg.flavor_segment") == 6,
+                    'BlackTea'
+                )
+                    .when(
+                    sqlf.col("seg.flavor_segment") == 7,
+                    'Explorer'
+                )
+                    .when(
+                    sqlf.col("seg.flavor_segment") == 8,
+                    'Vanilla'
+                )
+                    .when(
+                    sqlf.col("seg.flavor_segment") == 10,
+                    'Strawberry'
+                )
+                    .when(
+                    sqlf.col("seg.flavor_segment") == 11,
+                    'Mocha'
+                )
+                    .when(
+                    sqlf.col("seg.flavor_segment") == 12,
+                    'Fruit'
+                )
+                    .when(
+                    sqlf.col("seg.flavor_segment") == 16,
+                    'NoFlavor'
+                )
+                    .otherwise('Other')
+            )
             .select([
                 "pos.*",
                 "nutrition.sugars",
                 "nutrition.calories",
-                "cust.LoyaltyMemberTenureDays"
+                "cust.LoyaltyMemberTenureDays",
+                "Beverage_Segment",
+                "Flavor_Segment"
             ])
         )
 
