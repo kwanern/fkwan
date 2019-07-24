@@ -2,10 +2,7 @@ from ...libraries import *
 
 
 def get_spark_context():
-    if SparkContext._active_spark_context:
-        return SparkContext._active_spark_context
-    else:
-        raise RuntimeError("SparkContext must be initialized")
+    return SparkSession
 
 def engagement(promo, cohort):
     """
