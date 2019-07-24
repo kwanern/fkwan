@@ -262,6 +262,8 @@ class Profiler(object):
         if len(self.products_names) != 2:
             return print("This function can only accept Profiler with 2 customers.")
 
+        self.var.remove("Product")
+
         proportion = (
             self.pf_spdf.alias("ind")
             .join(
