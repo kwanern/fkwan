@@ -139,16 +139,15 @@ def engagement(spark, promo, cohort, promo_start_dt):
 
     promo_text = (
         """\n-------------------------
-        \nSummary for "{0}" Promo
+        \nSummary for Promo
         \n-------------------------
-        \n{1}
+        \n{0}
         \n-------------------------
         \nSummary for Cohort
         \n-------------------------
-        \n{2}
+        \n{1}
         \n-------------------------
         """.format(
-            promo["Product_Name"],
             promo_customer_total_count.set_index('Customer_Type').T,
             cohort_customer_total_count.set_index('Customer_Type').T
         )
