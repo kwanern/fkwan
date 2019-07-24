@@ -315,21 +315,21 @@ class Profiler(object):
         result = (
             self.pos.alias("pos")
             .join(
-                cohort.alias("B"),
-                sqlf.col("pos.Id") == sqlf.col("B.Id"),
+                cohort.alias("ind"),
+                sqlf.col("pos.Id") == sqlf.col("ind.Id"),
                 how="inner"
             )
             .withColumn(
                 "Cohort_2",
                 sqlf.when(
-                    sqlf.col("B.Proportion") == 1,
+                    sqlf.col("ind.Proportion") == 1,
                     self.products_names[0] + " only"
                 )
                 .when(
-                    sqlf.col("B.Proportion") == 0,
+                    sqlf.col("ind.Proportion") == 0,
                     self.products_names[0] + " only"
                 )
-                .otherwise(sqlf.col("B.Cohort"))
+                .otherwise(sqlf.col("ind.Cohort"))
             )
             .select(self.var + ["Proportion", "Cohort", "Cohort_2"])
         )
