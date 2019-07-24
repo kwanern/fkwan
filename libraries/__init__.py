@@ -2,7 +2,7 @@ from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
 from pyspark.sql import functions as sqlf
 from pyspark.sql.types import *
-from pyspark.sql import Window
+from pyspark.sql import Window, SparkSession
 from pyspark import SparkContext
 
 import numpy as np

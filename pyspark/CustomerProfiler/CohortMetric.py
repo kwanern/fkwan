@@ -28,7 +28,7 @@ def engagement(promo, cohort):
         >>> cohort = (spark.table("fkwan.Ice_Tea_Refreshers"))
         >>> engagement(spark, promo, cohort)
     """
-    spark = get_spark_context()
+    spark = SparkSession
     promo_spdf = (
         spark
         .table("fkwan.pos_line_item").alias("pos")
