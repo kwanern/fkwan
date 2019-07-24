@@ -19,44 +19,8 @@ def engagement(spark, promo, cohort):
         >>>   "Purchased_Freq_Min": 1,
         >>>   "Purchased_Freq_Max": 999999
         >>> }
-        >>> cohort = (spark.table("fkwan.Ice_Tea_Refreshers"))
         >>> engagement(spark, promo, cohort)
     """
-    promo_spdf = (
-        spark
-        .table("fkwan.pos_line_item").alias("pos")
-        .filter(
-            sqlf.col(promo["EPH_level"]).isin(promo["Id"]) &
-            sqlf.col("BusinessDate").between(promo["Promo_Start_Date"], promo["Promo_End_Date"])
-        )
-        .filter(
-            sqlf.col("AccountId").isNotNull() |
-            sqlf.col("FirstPaymentToken").isNotNull()
-        )
-        .withColumn(
-            "Id",
-            sqlf.when(
-                sqlf.col("AccountId").isNotNull(), sqlf.col("AccountId")
-            )
-                .otherwise(sqlf.col("FirstPaymentToken"))
-        )
-        .withColumn(
-            "Customer_Type",
-            sqlf.when(
-                sqlf.col("AccountId").isNotNull(), "SR"
-            )
-                .otherwise("Token")
-        )
-        .groupBy("Id", "Customer_Type")
-        .agg(
-            sqlf.sum(
-                sqlf.col("pos.GrossLineItemQty")
-            ).alias("Qty")
-        )
-        .where(
-            sqlf.col("Qty").between(promo["Purchased_Freq_Min"], promo["Purchased_Freq_Max"])
-        )
-    )
 
     old_customers = (
         spark
@@ -87,7 +51,7 @@ def engagement(spark, promo, cohort):
     )
 
     promo_customer_total_count = (
-        promo_spdf
+        promo
         .alias("promo")
         .join(
             old_customers.alias("old"),
@@ -106,14 +70,14 @@ def engagement(spark, promo, cohort):
                     sqlf.col("old.Id").isNull(),
                     sqlf.col("promo.Id")
                 )
-                    .otherwise(None)
+                .otherwise(None)
             ).alias("New_Count"),
             sqlf.countDistinct(
                 sqlf.when(
                     sqlf.col("old.Id").isNotNull(),
                     sqlf.col("promo.Id")
                 )
-                    .otherwise(None)
+                .otherwise(None)
             ).alias("Existing_Count")
         )
     ).toPandas()
@@ -121,7 +85,7 @@ def engagement(spark, promo, cohort):
     cohort_customer_total_count = (
         cohort.alias("cohort")
         .join(
-            promo_spdf.alias("promo"),
+            promo.alias("promo"),
             sqlf.col("cohort.Id") == sqlf.col("promo.Id"),
             how="left"
         )
