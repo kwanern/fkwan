@@ -1,5 +1,5 @@
-from ..libraries.__init__ import *
-from .udf import concat_string_arrays
+from libraries import *
+from pyspark.udf import concat_string_arrays
 
 
 class CustomerProfiler(object):

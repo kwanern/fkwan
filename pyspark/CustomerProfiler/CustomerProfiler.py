@@ -1,167 +1,5 @@
-from ..libraries.__init__ import *
-from .udf import concat_string_arrays, union_all
-from ..python.time import days
-from .CohortMetric import *
-
-class Customer(object):
-    def __init__(self, spark, products):
-        """
-            This is a class that cohort a group of customers based on their
-            purchased frequency of a specific product.
-
-            :param spark: spark initialization object
-            :param products: dictionary
-            :return: Customer class object
-
-            Examples:
-            >>> product = {
-            >>>             "Promo_Start_Date": "2019-03-05",
-            >>>             "Promo_End_Date": "2019-04-29",
-            >>>             "Product_Name": "Caramel Cloud",
-            >>>             "EPH_level": "NotionalProductlid",
-            >>>             "Id": ["3067"],
-            >>>             "Purchased_Freq_Min": 1,
-            >>>             "Purchased_Freq_Max": 999999
-            >>>           }
-            >>> caramel_cloud = Customer(spark, products["Caramel Cloud"])
-        """
-        self.start_dates_pd = pd.to_datetime(products["Promo_Start_Date"]).date()
-        self.end_dates_pd = pd.to_datetime(products["Promo_End_Date"]).date()
-        self.products_names = products["Product_Name"]
-        self.level = products["EPH_level"]
-        self.products_id = products["Id"]
-        self.pch_frq_min = products["Purchased_Freq_Min"]
-        self.pch_frq_max = products["Purchased_Freq_Max"]
-        self.spark = spark
-
-        # Join EPH
-        self.pos = (
-            spark
-            .table("fkwan.pos_line_item")
-            .alias("pos")
-            .filter(
-                (
-                    sqlf.col("AccountId").isNotNull() |
-                    sqlf.col("FirstPaymentToken").isNotNull()
-                )
-            )
-            .withColumn(
-                "Id",
-                sqlf.when(
-                    sqlf.col("AccountId").isNotNull(), sqlf.col("AccountId")
-                )
-                .otherwise(sqlf.col("FirstPaymentToken"))
-            )
-        )
-
-        # Select Cohort
-        self.pf_spdf = (
-            self.pos
-            .filter(
-                sqlf.col("BusinessDate").between(str(self.start_dates_pd + days(-31)), str(self.end_dates_pd)) &
-                sqlf.col(self.level).isin(self.products_id)
-            )
-            .withColumn(
-                "Product",
-                sqlf.lit(self.products_names)
-            )
-            .groupBy("Id", "Product")
-            .agg(
-                sqlf.sum(
-                    sqlf.when(
-                        sqlf.col("BusinessDate").between(str(self.start_dates_pd), str(self.end_dates_pd)),
-                        sqlf.col("pos.GrossLineItemQty")
-                    )
-                    .otherwise(0)
-                ).alias("Qty"),
-                sqlf.countDistinct(
-                    sqlf.when(
-                        sqlf.col("BusinessDate") \
-                            .between(str(self.start_dates_pd + days(-31)), str(self.end_dates_pd + days(-1))),
-                        sqlf.col("pos.TransactionId")
-                    )
-                    .otherwise(None)
-                ).alias("P30_Trans_Count")
-            )
-            .where(
-                sqlf.col("Qty").between(self.pch_frq_min, self.pch_frq_max)
-            )
-        )
-
-        self.pf_spdf = (
-            self.pf_spdf
-                .withColumn("P30_Trans_Freq",
-                            sqlf.when(sqlf.col("P30_Trans_Count").between(1, 2), "Active 30D, 1-2") \
-                            .when(sqlf.col("P30_Trans_Count").between(3, 5), "Active 30D, 3-5") \
-                            .when(sqlf.col("P30_Trans_Count").between(6, 9), "Active 30D, 6-9") \
-                            .when(sqlf.col("P30_Trans_Count") >= 10, "Active 30D, 10+") \
-                            .otherwise("0")
-                            )
-        )
-
-    def indicator(self, ind):
-        """
-           This is method to add additional indicator column for benchmark.
-
-           :param ind: dictionary
-
-            Examples:
-            >>> ind = {
-            >>>       "Indicator_Start_Date": "2019-03-31",
-            >>>       "Indicator_End_Date": "2019-04-29",
-            >>>       "EPH_level": "NotionalProductlid",
-            >>>       "Id": ["4017"],
-            >>>       "Indicator_Label": ("P1M Bought Refresher", "0")
-            >>>       "Indicator_colname": "Indicator"
-            >>>      }
-            >>> caramel_cloud = Customer(spark, products["Caramel Cloud"]).indicator(ind)
-        """
-
-        if "EPH_level" in ind.keys():
-            indicator_df = (
-                self.pos
-                .filter(
-                    sqlf.col("BusinessDate").between(ind["Indicator_Start_Date"], ind["Indicator_End_Date"]) &
-                    sqlf.col(ind["EPH_level"]).isin(ind["Id"])
-                )
-                .select(
-                    ["Id"]
-                )
-                .distinct()
-            )
-        else:
-            indicator_df = (
-                self.pos
-                .filter(
-                    sqlf.col("BusinessDate").between(ind["Indicator_Start_Date"], ind["Indicator_End_Date"])
-                )
-                .select(
-                    ["Id"]
-                )
-                .distinct()
-            )
-
-        var = ["A." + i for i in self.pf_spdf.columns] + [ind["Indicator_colname"]]
-
-        self.pf_spdf = (
-            self.pf_spdf
-            .alias("A")
-            .join(
-                indicator_df
-                .alias("ind"),
-                sqlf.col("A.Id") == sqlf.col("ind.Id"),
-                how="left"
-            )
-            .withColumn(
-                ind["Indicator_colname"],
-                sqlf.when(
-                    sqlf.col("ind.Id").isNotNull(),
-                    ind["Indicator_Label"][0]
-                )
-                .otherwise(ind["Indicator_Label"][1])
-            )
-            .select(var)
-        )
+from pyspark.udf import concat_string_arrays, union_all
+from libraries import *
 
 
 class Profiler(object):
@@ -232,9 +70,11 @@ class Profiler(object):
                 "pos.LoyaltyMemberTenureDays"
              ]
         )
+        self.grp_var = ["ind.Id", "ind.P30_Trans_Freq"]
 
         if self.indicator:
             self.var.extend(["ind." + i for i in self.indicator])
+            self.grp_var.extend(["ind." + i for i in self.indicator])
 
         # POS
         self.pos = (
@@ -351,11 +191,6 @@ class Profiler(object):
                 .otherwise(None)))
             .alias(re.sub("\s", "_", self.products_names[i])) for i in range(0, len(self.products_id))]
 
-        grp_var = ["ind.Id", "ind.P30_Trans_Freq"]
-
-        if self.indicator:
-            grp_var.extend(["ind." + i for i in self.indicator])
-
         ind = (
             self.pf_spdf
             .alias("ind")
@@ -364,7 +199,7 @@ class Profiler(object):
                 sqlf.col("pos.Id") == sqlf.col("ind.Id"),
                 how="left"
             )
-            .groupBy(grp_var)
+            .groupBy(self.grp_var)
             .agg(*exprs_ind)
         )
 
@@ -396,8 +231,9 @@ class Profiler(object):
         """
         ind = (
             self.pf_spdf
-                .select(["Id", "Product", "P30_Trans_Freq"])
-                .distinct()
+            .alias("ind")
+            .select(self.grp_var + ["Product"])
+            .distinct()
         )
 
         table_a = (
@@ -412,6 +248,91 @@ class Profiler(object):
         )
 
         return table_a
+
+    def proportion(self, rng=[(1/3), (2/3)]):
+        """
+        This method generates customer profile with dominant proportion.
+
+        :param rng: array with cutoffs
+        :return: spark dataframe
+
+        Examples:
+        >>> cust_prof_proportion = cust_prof.proportion(rng=[(1/3), (2/3)])
+        """
+        if self.products_names != 2:
+            return print("This function can only accept Profiler with 2 customers.")
+
+        proportion = (
+            self.pf_spdf.alias("ind")
+            .join(
+                (
+                    self.pf_spdf
+                    .filter(sqlf.col("Product") == self.products_names[0])
+                )
+                .alias("A"),
+                sqlf.col("ind.Id") == sqlf.col("A.Id"),
+                how="left"
+            )
+            .join(
+                (
+                    self.pf_spdf
+                    .filter(sqlf.col("Product") == self.products_names[1])
+                )
+                .alias("B"),
+                sqlf.col("ind.Id") == sqlf.col("B.Id"),
+                how="left"
+            )
+            .withColumn(
+                "Proportion",
+                (sqlf.coalesce(sqlf.col("A.Qty"), sqlf.lit(0.0))/
+                (sqlf.coalesce(sqlf.col("B.Qty"), sqlf.lit(0.0))+sqlf.coalesce(sqlf.col("A.Qty"), sqlf.lit(0.0))))
+            )
+            .select(self.grp_var + ["Proportion"])
+            .distinct()
+            .where(sqlf.col("Proportion").isNotNull())
+        )
+
+        cohort = (
+            proportion
+            .withColumn(
+                "Cohort",
+                sqlf.when(
+                    sqlf.col("Proportion") <= rng[0],
+                    self.products_names[1] + " Dominant"
+                )
+                .when(
+                    sqlf.col("Proportion") >= rng[1],
+                    self.products_names[0] + " Dominant"
+                )
+                .otherwise("Not Dominant")
+            )
+            .select(self.grp_var + ["Proportion", "Cohort"])
+            .distinct()
+        )
+
+        result = (
+            self.pos.alias("pos")
+            .join(
+                cohort.alias("B"),
+                sqlf.col("pos.Id") == sqlf.col("B.Id"),
+                how="inner"
+            )
+            .withColumn(
+                "Cohort_2",
+                sqlf.when(
+                    sqlf.col("B.Proportion") == 1,
+                    self.products_names[0] + " only"
+                )
+                .when(
+                    sqlf.col("B.ITR_Proportion") == 0,
+                    self.products_names[0] + " only"
+                )
+                .otherwise(sqlf.col("B.Cohort"))
+            )
+            .select(self.var + ["Proportion", "Cohort", "Cohort_2"])
+        )
+
+        return result
 
 
 
