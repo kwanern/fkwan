@@ -98,7 +98,7 @@ def beverage_segmentation(spark, product, cohort=None, title=None):
         result
         .withColumn(
             'proportion',
-            sqlf.col('units_cust')/sqlf.sum('units_cust').over(Window.partitionBy("Beverage_Segment"))
+            sqlf.col('units_cust')/sqlf.sum('units_cust').over(Window.partitionBy())
         )
     )
 
@@ -230,7 +230,7 @@ def flavor_segmentation(spark, product, cohort=None, title=None):
         result
             .withColumn(
             'proportion',
-            sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy("Flavor_Segment"))
+            sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy())
         )
     )
 
