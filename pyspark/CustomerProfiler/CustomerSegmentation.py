@@ -46,7 +46,6 @@ def beverage_segmentation(spark, product, cohort=None, title=None):
     else:
         name = product["Product_Name"]
 
-
     result = (
         pos
         .alias("pos")
@@ -92,6 +91,14 @@ def beverage_segmentation(spark, product, cohort=None, title=None):
         .groupBy("Product", "Beverage_Segment")
         .agg(
             (sqlf.sum(sqlf.col("GrossLineItemQty"))/sqlf.countDistinct(sqlf.col("AccountId"))).alias("units_cust")
+        )
+    )
+
+    result = (
+        result
+        .withColumn(
+            'proportion',
+            sqlf.col('units_cust')/sqlf.sum('units_cust').over(Window.partitionBy("Beverage_Segment"))
         )
     )
 
@@ -216,6 +223,14 @@ def flavor_segmentation(spark, product, cohort=None, title=None):
         .groupBy("Product", "Flavor_Segment")
         .agg(
             (sqlf.sum(sqlf.col("GrossLineItemQty"))/sqlf.countDistinct(sqlf.col("AccountId"))).alias("units_cust")
+        )
+    )
+
+    result = (
+        result
+            .withColumn(
+            'proportion',
+            sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy("Flavor_Segment"))
         )
     )
 
