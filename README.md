@@ -23,7 +23,7 @@ import fkwan
 ```
 Customer Profiler Packages:
 
-![Image of Customer Profiler](./img/customerprofiler.png)
+![Image of Customer Profiler](./img/customer_profiler.png)
 
 ## Versioning
 
