@@ -21,9 +21,13 @@ After installing the packages, you can import the package:
 ```
 import fkwan
 ```
+Customer Profiler Packages:
+
+![Image of Customer Profiler](./img/customerprofiler.png)
+
 ## Versioning
 
-Version 1.0.5
+Version 1.2.0
 
 ## Authors
 
