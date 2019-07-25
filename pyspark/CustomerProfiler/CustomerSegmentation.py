@@ -64,11 +64,11 @@ def beverage_segmentation(spark, product, cohort=None, title=None):
             "Beverage_Segment",
             sqlf.when(
                 sqlf.col("seg.bev_segment") == 0,
-                'Moderate Coffee Lover'
+                'Classic Craft'
             )
             .when(
                 sqlf.col("seg.bev_segment") == 1,
-                'Indulgent Coffee Drinker'
+                'Indulgent Mocha Drinker'
             )
             .when(
                 sqlf.col("seg.bev_segment") == 2,
@@ -80,11 +80,11 @@ def beverage_segmentation(spark, product, cohort=None, title=None):
             )
             .when(
                 sqlf.col("seg.bev_segment") == 5,
-                'Health Conscious'
+                'Light and Iced'
             )
             .when(
                 sqlf.col("seg.bev_segment") == 6,
-                'Fun Coffee Drinker'
+                'Sweet and Flavorful'
             )
             .otherwise(None)
         )
