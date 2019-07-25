@@ -142,7 +142,7 @@ class Profiler(object):
                 .table("ttran.customer_product_segments_1y_fy19q2_v2")
                 .alias("seg"),
                 sqlf.col("pos.AccountId") == sqlf.col("seg.GuidId"),
-                how="inner"
+                how="left"
             )
             .withColumn(
                 "Beverage_Segment",
