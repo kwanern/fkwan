@@ -2,12 +2,13 @@ from ...libraries import *
 from .Customer import *
 
 
-def beverage_segmentation(spark, product, cohort=None):
+def beverage_segmentation(spark, product, cohort=None, title=None):
     """
         This is a function that returns the beverage segmentation metrics.
         :param spark: spark object
         :param product: dictionary
         :param cohort: customer class
+        :param title: Overwrite existing title name
         :return: flavor segmentation spark table
 
         Examples:
@@ -40,6 +41,11 @@ def beverage_segmentation(spark, product, cohort=None):
                 how="inner"
             )
         )
+    if title:
+        name = title
+    else:
+        name = product["Product_Name"]
+
 
     result = (
         pos
@@ -53,7 +59,7 @@ def beverage_segmentation(spark, product, cohort=None):
         )
         .withColumn(
             "Product",
-            sqlf.lit(product["Product_Name"])
+            sqlf.lit(name)
         )
         .withColumn(
             "Beverage_Segment",
@@ -92,12 +98,13 @@ def beverage_segmentation(spark, product, cohort=None):
     return result
 
 
-def flavor_segmentation(spark, product, cohort=None):
+def flavor_segmentation(spark, product, cohort=None, title=None):
     """
         This is a function that returns the flavor segmentation metrics.
         :param spark: spark object
         :param product: dictionary
         :param cohort: spark table
+        :param title: Overwrite existing title name
         :return: flavor segmentation spark table
 
         Examples:
@@ -125,11 +132,16 @@ def flavor_segmentation(spark, product, cohort=None):
         pos = (
             pos.alias("result")
             .join(
-                cohort.alias("cohort"),
+                cohort.pf_spdf.alias("cohort"),
                 sqlf.col("result.AccountId") == sqlf.col("cohort.Id"),
                 how="inner"
             )
         )
+
+    if title:
+        name = title
+    else:
+        name = product["Product_Name"]
 
     result = (
         pos
@@ -143,7 +155,7 @@ def flavor_segmentation(spark, product, cohort=None):
         )
         .withColumn(
             "Product",
-            sqlf.lit(product["Product_Name"])
+            sqlf.lit(name)
         )
         .withColumn(
             "Flavor_Segment",
