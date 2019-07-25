@@ -35,7 +35,7 @@ def beverage_segmentation(spark, product, cohort=None):
         pos = (
             pos.alias("result")
             .join(
-                cohort.alias("cohort"),
+                cohort.spdf.alias("cohort"),
                 sqlf.col("result.AccountId") == sqlf.col("cohort.Id"),
                 how="inner"
             )
