@@ -10,5 +10,5 @@ import re as re
 import pandas as pd
 #from sklearn import linear_model
 #import statsmodels.api as sm
-import python.time
+import .python.time
 from datetime import datetime
