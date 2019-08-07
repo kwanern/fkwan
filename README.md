@@ -27,7 +27,7 @@ Customer Profiler Packages:
 
 ## Versioning
 
-Version 1.2.0
+Version 1.2.2
 
 ## Authors
 
