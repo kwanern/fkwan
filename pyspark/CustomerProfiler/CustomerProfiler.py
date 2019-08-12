@@ -422,7 +422,7 @@ class Profiler(object):
                 )
                 .when(
                     sqlf.col("ind.Proportion") == 0,
-                    self.products_names[0] + " only"
+                    self.products_names[1] + " only"
                 )
                 .otherwise(sqlf.col("ind.Cohort"))
             )
