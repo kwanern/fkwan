@@ -76,7 +76,7 @@ def beverage_segmentation(spark, product, cohort=None, title=None):
             )
             .when(
                 sqlf.col("seg.bev_segment") == 3,
-                'Sugar Lover'
+                'Treat Seeker'
             )
             .when(
                 sqlf.col("seg.bev_segment") == 5,
