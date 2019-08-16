@@ -90,15 +90,25 @@ def beverage_segmentation(spark, product, cohort=None, title=None):
         )
         .groupBy("Product", "Beverage_Segment")
         .agg(
-            (sqlf.sum(sqlf.col("GrossLineItemQty"))/sqlf.countDistinct(sqlf.col("AccountId"))).alias("units_cust")
+            (sqlf.sum(sqlf.col("GrossLineItemQty"))/sqlf.countDistinct(sqlf.col("AccountId"))).alias("units_cust"),
+            (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
+            (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS")
         )
     )
 
     result = (
         result
         .withColumn(
-            'proportion',
-            sqlf.col('units_cust')/sqlf.sum('units_cust').over(Window.partitionBy())
+            'units_cust_proportion',
+            sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy())
+        )
+        .withColumn(
+            'total_units_proportion',
+            sqlf.col('units') / sqlf.sum('units').over(Window.partitionBy())
+        )
+        .withColumn(
+            'total_nds_proportion',
+            sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
         )
     )
 
@@ -222,15 +232,25 @@ def flavor_segmentation(spark, product, cohort=None, title=None):
         )
         .groupBy("Product", "Flavor_Segment")
         .agg(
-            (sqlf.sum(sqlf.col("GrossLineItemQty"))/sqlf.countDistinct(sqlf.col("AccountId"))).alias("units_cust")
+            (sqlf.sum(sqlf.col("GrossLineItemQty"))/sqlf.countDistinct(sqlf.col("AccountId"))).alias("units_cust"),
+            (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
+            (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS")
         )
     )
 
     result = (
         result
-            .withColumn(
-            'proportion',
+        .withColumn(
+            'units_cust_proportion',
             sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy())
+        )
+        .withColumn(
+            'total_units_proportion',
+            sqlf.col('units') / sqlf.sum('units').over(Window.partitionBy())
+        )
+        .withColumn(
+            'total_nds_proportion',
+            sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
         )
     )
 
