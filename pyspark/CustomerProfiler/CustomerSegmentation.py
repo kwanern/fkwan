@@ -2,12 +2,13 @@ from ...libraries import *
 from .Customer import *
 
 
-def beverage_segmentation(spark, product, cohort=None, title=None):
+def beverage_segmentation(spark, product, cohort=None, df="ttran.customer_product_segments_1y_fy19q2_v2", title=None):
     """
         This is a function that returns the beverage segmentation metrics.
         :param spark: spark object
         :param product: dictionary
         :param cohort: customer class
+        :param df: segmentation table
         :param title: Overwrite existing title name
         :return: flavor segmentation spark table
 
@@ -21,7 +22,7 @@ def beverage_segmentation(spark, product, cohort=None, title=None):
         >>>   "Purchased_Freq_Min": 1,
         >>>   "Purchased_Freq_Max": 999999
         >>> }
-        >>> df = beverage_segmentation(spark, promo, cohort)
+        >>> df = beverage_segmentation(spark, promo, cohort, df = "ttran.customer_product_segments_1y_fy19q2_v2")
     """
     pos = (
         spark
@@ -46,15 +47,30 @@ def beverage_segmentation(spark, product, cohort=None, title=None):
     else:
         name = product["Product_Name"]
 
+    base = (
+        spark
+        .table(df)
+        .groupBy("bev_segment")
+        .agg(
+            (sqlf.countDistinct(sqlf.col("GuidId"))).alias("base")
+        )
+    )
+
     result = (
         pos
         .alias("pos")
         .join(
             spark
-            .table("ttran.customer_product_segments_1y_fy19q2_v2")
+            .table(df)
             .alias("seg"),
             sqlf.col("pos.AccountId") == sqlf.col("seg.GuidId"),
             how="inner"
+        )
+        .join(
+            base
+            .alias("base"),
+            sqlf.col("seg.bev_segment") == sqlf.col("base.bev_segment"),
+            how="left"
         )
         .withColumn(
             "Product",
@@ -88,7 +104,7 @@ def beverage_segmentation(spark, product, cohort=None, title=None):
             )
             .otherwise(None)
         )
-        .groupBy("Product", "Beverage_Segment")
+        .groupBy("Product", "Beverage_Segment", "base")
         .agg(
             (sqlf.sum(sqlf.col("GrossLineItemQty"))/sqlf.countDistinct(sqlf.col("AccountId"))).alias("units_cust"),
             (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
@@ -110,16 +126,21 @@ def beverage_segmentation(spark, product, cohort=None, title=None):
             'total_nds_proportion',
             sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
         )
+        .withColumn(
+            'base_proportion',
+            sqlf.col('base') / sqlf.sum('base').over(Window.partitionBy())
+        )
     )
 
     return result
 
 
-def flavor_segmentation(spark, product, cohort=None, title=None):
+def flavor_segmentation(spark, product, cohort=None, df="ttran.customer_product_segments_1y_fy19q2_v2", title=None):
     """
         This is a function that returns the flavor segmentation metrics.
         :param spark: spark object
         :param product: dictionary
+        :param df: segmentation table
         :param cohort: spark table
         :param title: Overwrite existing title name
         :return: flavor segmentation spark table
@@ -134,7 +155,7 @@ def flavor_segmentation(spark, product, cohort=None, title=None):
         >>>   "Purchased_Freq_Min": 1,
         >>>   "Purchased_Freq_Max": 999999
         >>> }
-        >>> df = beverage_segmentation(spark, promo, cohort)
+        >>> df = beverage_segmentation(spark, promo, cohort, df = "ttran.customer_product_segments_1y_fy19q2_v2")
     """
     pos = (
         spark
@@ -160,15 +181,30 @@ def flavor_segmentation(spark, product, cohort=None, title=None):
     else:
         name = product["Product_Name"]
 
+    base = (
+        spark
+        .table(df)
+        .groupBy("flavor_segment")
+        .agg(
+            (sqlf.countDistinct(sqlf.col("GuidId"))).alias("base")
+        )
+    )
+
     result = (
         pos
         .alias("pos")
         .join(
             spark
-            .table("ttran.customer_product_segments_1y_fy19q2_v2")
+            .table(df)
             .alias("seg"),
             sqlf.col("pos.AccountId") == sqlf.col("seg.GuidId"),
             how="inner"
+        )
+        .join(
+            base
+            .alias("base"),
+            sqlf.col("seg.flavor_segment") == sqlf.col("base.flavor_segment"),
+            how="left"
         )
         .withColumn(
             "Product",
@@ -230,7 +266,7 @@ def flavor_segmentation(spark, product, cohort=None, title=None):
             )
             .otherwise('Other')
         )
-        .groupBy("Product", "Flavor_Segment")
+        .groupBy("Product", "Flavor_Segment", "base")
         .agg(
             (sqlf.sum(sqlf.col("GrossLineItemQty"))/sqlf.countDistinct(sqlf.col("AccountId"))).alias("units_cust"),
             (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
@@ -251,6 +287,10 @@ def flavor_segmentation(spark, product, cohort=None, title=None):
         .withColumn(
             'total_nds_proportion',
             sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
+        )
+        .withColumn(
+            'base_proportion',
+            sqlf.col('base') / sqlf.sum('base').over(Window.partitionBy())
         )
     )
 
