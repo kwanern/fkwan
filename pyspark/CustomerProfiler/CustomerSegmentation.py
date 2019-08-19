@@ -40,8 +40,7 @@ class Segmentation(object):
             .table("fkwan.pos_line_item")
             .filter(
                 sqlf.col("AccountId").isNotNull() &
-                sqlf.col("BusinessDate").between(self.start_date, self.end_date) &
-                sqlf.col(self.level).isin(self.products_id)
+                sqlf.col("BusinessDate").between(self.start_date, self.end_date)
             )
         )
 
@@ -50,7 +49,7 @@ class Segmentation(object):
         else:
             self.name = self.products_names
 
-    def beverage_segmentation(self, cohort=None):
+    def beverage_segmentation(self, cohort=None, base=False):
         self.pos = (
             self.pos
             .alias("pos")
@@ -103,22 +102,15 @@ class Segmentation(object):
                     sqlf.col("result.AccountId") == sqlf.col("cohort.Id"),
                     how="inner"
                 )
-                .withColumn(
-                    "Product",
-                    sqlf.lit(self.name)
-                )
-            )
-        else:
-            self.pos = (
-                self.pos
-                .withColumn(
-                    "Product",
-                    sqlf.lit("base")
-                )
             )
 
-        self.pos = (
+        result = (
             self.pos
+            .filter(sqlf.col(self.level).isin(self.products_id))
+            .withColumn(
+                "Product",
+                sqlf.lit(self.name)
+            )
             .groupBy("Product", "Beverage_Segment")
             .agg(
                 (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
@@ -128,8 +120,8 @@ class Segmentation(object):
             )
         )
 
-        self.pos = (
-            self.pos
+        result = (
+            result
             .withColumn(
                 'units_cust_proportion',
                 sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy())
@@ -148,9 +140,46 @@ class Segmentation(object):
             )
         )
 
-        return self.pos
+        if base:
+            base = (
+                self.pos
+                .withColumn(
+                    "Product",
+                    sqlf.lit("base")
+                )
+                .groupBy("Product", "Beverage_Segment")
+                .agg(
+                    (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
+                        "units_cust"),
+                    (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
+                    (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS")
+                )
+            )
 
-    def flavor_segmentation(self, cohort=None):
+            base = (
+                base
+                .withColumn(
+                    'units_cust_proportion',
+                    sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy())
+                )
+                .withColumn(
+                    'total_units_proportion',
+                    sqlf.col('units') / sqlf.sum('units').over(Window.partitionBy())
+                )
+                .withColumn(
+                    'total_nds_proportion',
+                    sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
+                )
+                .withColumn(
+                    'base_proportion',
+                    sqlf.col('base') / sqlf.sum('base').over(Window.partitionBy())
+                )
+            )
+            return result.union(base)
+
+        return result
+
+    def flavor_segmentation(self, cohort=None, base=False):
         self.pos = (
             self.pos
             .alias("pos")
@@ -227,22 +256,15 @@ class Segmentation(object):
                     sqlf.col("result.AccountId") == sqlf.col("cohort.Id"),
                     how="inner"
                 )
-                .withColumn(
-                    "Product",
-                    sqlf.lit(self.name)
-                )
-            )
-        else:
-            self.pos = (
-                self.pos
-                .withColumn(
-                    "Product",
-                    sqlf.lit("base")
-                )
             )
 
-        self.pos = (
+        result = (
             self.pos
+            .filter(sqlf.col(self.level).isin(self.products_id))
+            .withColumn(
+                "Product",
+                sqlf.lit(self.name)
+            )
             .groupBy("Product", "Flavor_Segments")
             .agg(
                 (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
@@ -252,8 +274,8 @@ class Segmentation(object):
             )
         )
 
-        self.pos = (
-            self.pos
+        result = (
+            result
             .withColumn(
                 'units_cust_proportion',
                 sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy())
@@ -272,6 +294,43 @@ class Segmentation(object):
             )
         )
 
-        return self.pos
+        if base:
+            base = (
+                self.pos
+                .withColumn(
+                    "Product",
+                    sqlf.lit("base")
+                )
+                .groupBy("Product", "Flavor_Segments")
+                .agg(
+                    (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
+                        "units_cust"),
+                    (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
+                    (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS")
+                )
+            )
+
+            base = (
+                base
+                .withColumn(
+                    'units_cust_proportion',
+                    sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy())
+                )
+                .withColumn(
+                    'total_units_proportion',
+                    sqlf.col('units') / sqlf.sum('units').over(Window.partitionBy())
+                )
+                .withColumn(
+                    'total_nds_proportion',
+                    sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
+                )
+                .withColumn(
+                    'base_proportion',
+                    sqlf.col('base') / sqlf.sum('base').over(Window.partitionBy())
+                )
+            )
+            return result.union(base)
+
+        return result
 
 
