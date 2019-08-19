@@ -3,11 +3,10 @@ from .Customer import *
 
 
 class Segmentation(object):
-    def __init__(self, spark, product, df="ttran.customer_product_segments_1y_fy19q2_v2", title=None):
+    def __init__(self, spark, df="ttran.customer_product_segments_1y_fy19q2_v2", title=None):
         """
                 This is a function that returns the segmentation metrics.
                 :param spark: spark object
-                :param product: dictionary
                 :param df: segmentation table
                 :param title: Overwrite existing title name
                 :return: beverage segmentation spark table
@@ -24,13 +23,13 @@ class Segmentation(object):
                 >>> }
                 >>> df = Segmentation(spark, promo, cohort, df = "ttran.customer_product_segments_1y_fy19q2_v2")
             """
-        self.start_date = product["Promo_Start_Date"]
-        self.end_date = product["Promo_End_Date"]
-        self.products_names = product["Product_Name"]
-        self.level = product["EPH_level"]
-        self.products_id = product["Id"]
-        self.pch_frq_min = product["Purchased_Freq_Min"]
-        self.pch_frq_max = product["Purchased_Freq_Max"]
+        self.start_date = None
+        self.end_date = None
+        self.products_names = None
+        self.level = None
+        self.products_id = None
+        self.pch_frq_min = None
+        self.pch_frq_max = None
         self.spark = spark
         self.title = title
         self.df = df
@@ -39,8 +38,7 @@ class Segmentation(object):
             self.spark
             .table("fkwan.pos_line_item")
             .filter(
-                sqlf.col("AccountId").isNotNull() &
-                sqlf.col("BusinessDate").between(self.start_date, self.end_date)
+                sqlf.col("AccountId").isNotNull()
             )
         )
 
@@ -49,10 +47,19 @@ class Segmentation(object):
         else:
             self.name = self.products_names
 
-    def beverage_segmentation(self, cohort=None, base=False):
+    def beverage_segmentation(self, product, cohort=None, base=False):
+        self.start_date = product["Promo_Start_Date"]
+        self.end_date = product["Promo_End_Date"]
+        self.products_names = product["Product_Name"]
+        self.level = product["EPH_level"]
+        self.products_id = product["Id"]
+        self.pch_frq_min = product["Purchased_Freq_Min"]
+        self.pch_frq_max = product["Purchased_Freq_Max"]
+
         self.pos = (
             self.pos
             .alias("pos")
+            .filter(sqlf.col("BusinessDate").between(self.start_date, self.end_date))
             .join(
                 self.spark
                 .table(self.df)
@@ -171,10 +178,19 @@ class Segmentation(object):
 
         return result
 
-    def flavor_segmentation(self, cohort=None, base=False):
+    def flavor_segmentation(self, product, cohort=None, base=False):
+        self.start_date = product["Promo_Start_Date"]
+        self.end_date = product["Promo_End_Date"]
+        self.products_names = product["Product_Name"]
+        self.level = product["EPH_level"]
+        self.products_id = product["Id"]
+        self.pch_frq_min = product["Purchased_Freq_Min"]
+        self.pch_frq_max = product["Purchased_Freq_Max"]
+
         self.pos = (
             self.pos
             .alias("pos")
+            .filter(sqlf.col("BusinessDate").between(self.start_date, self.end_date))
             .join(
                 self.spark
                 .table(self.df)
