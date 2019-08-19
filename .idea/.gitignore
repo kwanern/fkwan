@@ -8,3 +8,4 @@
 /markdown-navigator/profiles_settings.xml
 /.pyspark/CustomerProfiler/CustomerSegmentation_archived.py
 /.pyspark/CustomerProfiler/CustomerProfiler_archived.py
+../libraries/test.py
