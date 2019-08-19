@@ -141,7 +141,7 @@ class Segmentation(object):
                 self.pos
                 .withColumn(
                     "Product",
-                    sqlf.lit("base")
+                    sqlf.lit("Base")
                 )
                 .groupBy("Product", "Beverage_Segment")
                 .agg(
@@ -287,7 +287,7 @@ class Segmentation(object):
                 self.pos
                 .withColumn(
                     "Product",
-                    sqlf.lit("base")
+                    sqlf.lit("Base")
                 )
                 .groupBy("Product", "Flavor_Segments")
                 .agg(
