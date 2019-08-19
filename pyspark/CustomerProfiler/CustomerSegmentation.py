@@ -3,7 +3,7 @@ from .Customer import *
 
 
 class Segmentation(object):
-    def __init__(self, spark, df="ttran.customer_product_segments_1y_fy19q2_v2", title=None):
+    def __init__(self, spark, df="ttran.customer_product_segments_1y_fy19q2_v2"):
         """
                 This is a function that returns the segmentation metrics.
                 :param spark: spark object
@@ -31,7 +31,7 @@ class Segmentation(object):
         self.pch_frq_min = None
         self.pch_frq_max = None
         self.spark = spark
-        self.title = title
+        self.name = None
         self.df = df
 
         self.pos = (
@@ -42,12 +42,7 @@ class Segmentation(object):
             )
         )
 
-        if self.title:
-            self.name = self.title
-        else:
-            self.name = self.products_names
-
-    def beverage_segmentation(self, product, cohort=None, base=False):
+    def beverage_segmentation(self, product, cohort=None, base=False, title=None):
         self.start_date = product["Promo_Start_Date"]
         self.end_date = product["Promo_End_Date"]
         self.products_names = product["Product_Name"]
@@ -55,6 +50,11 @@ class Segmentation(object):
         self.products_id = product["Id"]
         self.pch_frq_min = product["Purchased_Freq_Min"]
         self.pch_frq_max = product["Purchased_Freq_Max"]
+
+        if title:
+            self.name = title
+        else:
+            self.name = self.products_names
 
         self.pos = (
             self.pos
@@ -178,7 +178,7 @@ class Segmentation(object):
 
         return result
 
-    def flavor_segmentation(self, product, cohort=None, base=False):
+    def flavor_segmentation(self, product, cohort=None, base=False, title=None):
         self.start_date = product["Promo_Start_Date"]
         self.end_date = product["Promo_End_Date"]
         self.products_names = product["Product_Name"]
@@ -186,6 +186,11 @@ class Segmentation(object):
         self.products_id = product["Id"]
         self.pch_frq_min = product["Purchased_Freq_Min"]
         self.pch_frq_max = product["Purchased_Freq_Max"]
+
+        if title:
+            self.name = title
+        else:
+            self.name = self.products_names
 
         self.pos = (
             self.pos
