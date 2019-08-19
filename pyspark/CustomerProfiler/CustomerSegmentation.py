@@ -211,7 +211,7 @@ def flavor_segmentation(spark, product, cohort=None, df="ttran.customer_product_
             sqlf.lit(name)
         )
         .withColumn(
-            "Flavor_Segment",
+            "Flavor_Segments",
             sqlf.when(
                 sqlf.col("seg.flavor_segment") == 0,
                 'Matcha'
@@ -266,7 +266,7 @@ def flavor_segmentation(spark, product, cohort=None, df="ttran.customer_product_
             )
             .otherwise('Other')
         )
-        .groupBy("Product", "Flavor_Segment", "base")
+        .groupBy("Product", "Flavor_Segments", "base")
         .agg(
             (sqlf.sum(sqlf.col("GrossLineItemQty"))/sqlf.countDistinct(sqlf.col("AccountId"))).alias("units_cust"),
             (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
