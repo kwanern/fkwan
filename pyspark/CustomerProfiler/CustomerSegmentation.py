@@ -134,10 +134,6 @@ class Segmentation(object):
                 'total_nds_proportion',
                 sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
             )
-            .withColumn(
-                'base_proportion',
-                sqlf.col('base') / sqlf.sum('base').over(Window.partitionBy())
-            )
         )
 
         if base:
@@ -169,10 +165,6 @@ class Segmentation(object):
                 .withColumn(
                     'total_nds_proportion',
                     sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
-                )
-                .withColumn(
-                    'base_proportion',
-                    sqlf.col('base') / sqlf.sum('base').over(Window.partitionBy())
                 )
             )
             return result.union(base)
@@ -288,10 +280,6 @@ class Segmentation(object):
                 'total_nds_proportion',
                 sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
             )
-            .withColumn(
-                'base_proportion',
-                sqlf.col('base') / sqlf.sum('base').over(Window.partitionBy())
-            )
         )
 
         if base:
@@ -323,10 +311,6 @@ class Segmentation(object):
                 .withColumn(
                     'total_nds_proportion',
                     sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
-                )
-                .withColumn(
-                    'base_proportion',
-                    sqlf.col('base') / sqlf.sum('base').over(Window.partitionBy())
                 )
             )
             return result.union(base)
