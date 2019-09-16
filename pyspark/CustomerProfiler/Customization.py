@@ -29,6 +29,16 @@ def add_customization(spark, df, date_range=None):
         .distinct()
     )
 
+    drizzle_mod = (
+        df
+        .filter(
+            sqlf.col("SellableItemDescription").like("%Drizzle%") &
+            (sqlf.col("ProductTypeDescription") == 'Modifier')
+        )
+        .select(["SellableItemDescription", "transactionid", "containerid"])
+        .distinct()
+    )
+
     df = (
         df.alias("A")
         .join(
@@ -38,8 +48,18 @@ def add_customization(spark, df, date_range=None):
             (sqlf.col("A.containerchildsequencenumber") == 0),
             how="left"
         )
+        .join(
+            drizzle_mod.alias("drizzle"),
+            (sqlf.col("A.TransactionId") == sqlf.col("drizzle.TransactionId")) &
+            (sqlf.col("A.containerid") == sqlf.col("drizzle.containerid")) &
+            (sqlf.col("A.containerchildsequencenumber") == 0),
+            how="left"
+        )
         .groupBy(["A." + x for x in df.schema.names])
-        .agg(sqlf.collect_set(sqlf.col("powder.SellableItemDescription")).alias("powder_modification"))
+        .agg(
+            sqlf.collect_set(sqlf.col("powder.SellableItemDescription")).alias("powder_modification"),
+            sqlf.collect_set(sqlf.col("drizzle.SellableItemDescription")).alias("drizzle_modification")
+        )
     )
 
     df_1 = (
