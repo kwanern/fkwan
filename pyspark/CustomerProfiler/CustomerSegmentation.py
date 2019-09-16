@@ -3,12 +3,13 @@ from .Customer import *
 
 
 class Segmentation(object):
-    def __init__(self, spark, df="ttran.customer_product_segments_1y_fy19q2_v2"):
+    def __init__(self, spark, period='year', date='2019-06-30'):
         """
                 This is a function that returns the segmentation metrics.
                 :param spark: spark object
-                :param df: segmentation table
-                :param title: Overwrite existing title name
+                :param period: string. e.g. 'year', 'quarter'
+                :param date: string e.g. For Year: ('2018-06-30', '2019-06-30');
+                For Quarter: ('2018-12-31', '2019-03-31', '2019-06-30', '2019-09-30')
                 :return: beverage segmentation spark table
 
                 Examples:
@@ -21,8 +22,8 @@ class Segmentation(object):
                 >>>   "Purchased_Freq_Min": 1,
                 >>>   "Purchased_Freq_Max": 999999
                 >>> }
-                >>> df = Segmentation(spark, promo, cohort, df = "ttran.customer_product_segments_1y_fy19q2_v2")
-            """
+                >>> df = Segmentation(spark, period='year', date='2019-06-30')
+        """
         self.start_date = None
         self.end_date = None
         self.products_names = None
@@ -32,13 +33,29 @@ class Segmentation(object):
         self.pch_frq_max = None
         self.spark = spark
         self.name = None
-        self.df = df
+        self.period = period
+        self.seg_date = date
 
         self.pos = (
             self.spark
             .table("fkwan.pos_line_item")
             .filter(
-                sqlf.col("AccountId").isNotNull()
+                sqlf.col("AccountId").isNotNull() |
+                sqlf.col("FirstPaymentToken").isNotNull()
+            )
+            .withColumn(
+                "Id",
+                sqlf.when(
+                    sqlf.col("AccountId").isNotNull(), sqlf.col("AccountId")
+                )
+                .otherwise(sqlf.col("FirstPaymentToken"))
+            )
+            .withColumn(
+                "Customer_Type",
+                sqlf.when(
+                    sqlf.col("AccountId").isNotNull(), "SR"
+                )
+                .otherwise("Token")
             )
         )
 
@@ -62,42 +79,29 @@ class Segmentation(object):
             .filter(sqlf.col("BusinessDate").between(self.start_date, self.end_date))
             .join(
                 self.spark
-                .table(self.df)
-                .alias("seg"),
-                sqlf.col("pos.AccountId") == sqlf.col("seg.GuidId"),
-                how="inner"
+                .table("ttran.taste_segments_v3")
+                .alias("sr"),
+                ((sqlf.col("pos.Id") == sqlf.col("sr.GuidId")) &
+                 (sqlf.col("sr.period") == self.period) &
+                 (sqlf.col("sr.end_date") == self.seg_date)),
+                how="left"
+            )
+            .join(
+                self.spark
+                    .table("ttran.taste_segments_non_sr_v3")
+                    .alias("nonsr"),
+                ((sqlf.col("pos.Id") == sqlf.col("nonsr.FirstPaymentToken")) &
+                 (sqlf.col("nonsr.period") == self.period) &
+                 (sqlf.col("nonsr.end_date") == self.seg_date)),
+                how="left"
             )
             .withColumn(
                 "Product",
                 sqlf.lit(self.name)
             )
-            .withColumn(
-                "Beverage_Segment",
-                sqlf.when(
-                    sqlf.col("seg.bev_segment") == 0,
-                    'Classic Craft'
-                )
-                .when(
-                    sqlf.col("seg.bev_segment") == 1,
-                    'Indulgent Mocha Drinker'
-                )
-                .when(
-                    sqlf.col("seg.bev_segment") == 2,
-                    'Coffee Head'
-                )
-                .when(
-                    sqlf.col("seg.bev_segment") == 3,
-                    'Treat Seeker'
-                )
-                .when(
-                    sqlf.col("seg.bev_segment") == 5,
-                    'Light and Iced'
-                )
-                .when(
-                    sqlf.col("seg.bev_segment") == 6,
-                    'Sweet and Flavorful'
-                )
-                .otherwise(None)
+            .where(
+                sqlf.col("sr.GuidId").isNotNull() |
+                sqlf.col("nonsr.FirstPaymentToken").isNotNull()
             )
         )
 
@@ -118,7 +122,7 @@ class Segmentation(object):
                 "Product",
                 sqlf.lit(self.name)
             )
-            .groupBy("Product", "Beverage_Segment")
+            .groupBy("Product", "Customer_Type", "bev_primary_segment")
             .agg(
                 (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
                     "units_cust"),
@@ -148,9 +152,9 @@ class Segmentation(object):
                 self.pos
                 .withColumn(
                     "Product",
-                    sqlf.lit("All SR")
+                    sqlf.lit("All Products")
                 )
-                .groupBy("Product", "Beverage_Segment")
+                .groupBy("Product", "Customer_Type", "bev_primary_segment")
                 .agg(
                     (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
                         "units_cust"),
@@ -198,66 +202,29 @@ class Segmentation(object):
             .filter(sqlf.col("BusinessDate").between(self.start_date, self.end_date))
             .join(
                 self.spark
-                .table(self.df)
-                .alias("seg"),
-                sqlf.col("pos.AccountId") == sqlf.col("seg.GuidId"),
-                how="inner"
+                    .table("ttran.taste_segments_v3")
+                    .alias("sr"),
+                ((sqlf.col("pos.Id") == sqlf.col("sr.GuidId")) &
+                 (sqlf.col("sr.period") == self.period) &
+                 (sqlf.col("sr.end_date") == self.seg_date)),
+                how="left"
+            )
+            .join(
+                self.spark
+                    .table("ttran.taste_segments_non_sr_v3")
+                    .alias("nonsr"),
+                ((sqlf.col("pos.Id") == sqlf.col("nonsr.FirstPaymentToken")) &
+                 (sqlf.col("nonsr.period") == self.period) &
+                 (sqlf.col("nonsr.end_date") == self.seg_date)),
+                how="left"
             )
             .withColumn(
-                "Flavor_Segments",
-                sqlf.when(
-                    sqlf.col("seg.flavor_segment") == 0,
-                    'Matcha'
-                )
-                .when(
-                    sqlf.col("seg.flavor_segment") == 1,
-                    'Caramel'
-                )
-                .when(
-                    sqlf.col("seg.flavor_segment") == 2,
-                    'WhiteChocolateMocha'
-                )
-                .when(
-                    sqlf.col("seg.flavor_segment") == 3,
-                    'Cinnamon'
-                )
-                .when(
-                    sqlf.col("seg.flavor_segment") == 4,
-                    'Chai'
-                )
-                .when(
-                    sqlf.col("seg.flavor_segment") == 5,
-                    'GreenTea'
-                )
-                .when(
-                    sqlf.col("seg.flavor_segment") == 6,
-                    'BlackTea'
-                )
-                .when(
-                    sqlf.col("seg.flavor_segment") == 7,
-                    'Explorer'
-                )
-                .when(
-                    sqlf.col("seg.flavor_segment") == 8,
-                    'Vanilla'
-                )
-                .when(
-                    sqlf.col("seg.flavor_segment") == 10,
-                    'Strawberry'
-                )
-                .when(
-                    sqlf.col("seg.flavor_segment") == 11,
-                    'Mocha'
-                )
-                .when(
-                    sqlf.col("seg.flavor_segment") == 12,
-                    'Fruit'
-                )
-                .when(
-                    sqlf.col("seg.flavor_segment") == 16,
-                    'NoFlavor'
-                )
-                .otherwise('Other')
+                "Product",
+                sqlf.lit(self.name)
+            )
+            .where(
+                sqlf.col("sr.GuidId").isNotNull() |
+                sqlf.col("nonsr.FirstPaymentToken").isNotNull()
             )
         )
 
@@ -266,7 +233,7 @@ class Segmentation(object):
                 self.pos.alias("result")
                     .join(
                     cohort.pf_spdf.alias("cohort"),
-                    sqlf.col("result.AccountId") == sqlf.col("cohort.Id"),
+                    sqlf.col("result.Id") == sqlf.col("cohort.Id"),
                     how="inner"
                 )
             )
@@ -278,7 +245,7 @@ class Segmentation(object):
                 "Product",
                 sqlf.lit(self.name)
             )
-            .groupBy("Product", "Flavor_Segments")
+            .groupBy("Product", "Customer_Type", "flavor_primary_segment")
             .agg(
                 (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
                     "units_cust"),
@@ -308,9 +275,9 @@ class Segmentation(object):
                 self.pos
                 .withColumn(
                     "Product",
-                    sqlf.lit("All SR")
+                    sqlf.lit("All Products")
                 )
-                .groupBy("Product", "Flavor_Segments")
+                .groupBy("Product", "Customer_Type", "flavor_primary_segment")
                 .agg(
                     (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
                         "units_cust"),
