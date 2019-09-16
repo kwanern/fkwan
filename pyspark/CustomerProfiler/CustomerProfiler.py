@@ -61,6 +61,8 @@ class Profiler(object):
                 "ProductStyleId",
                 "NotionalProductDescription",
                 "NotionalProductlId",
+                "SellableItemDescription",
+                "SellableItemId",
                 "pos.NetDiscountedSalesAmount",
                 "pos.TransactionId",
                 "pos.GrossLineItemQty",
