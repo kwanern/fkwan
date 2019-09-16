@@ -66,7 +66,7 @@ class Profiler(object):
                 "pos.NetDiscountedSalesAmount",
                 "pos.TransactionId",
                 "ContainerId",
-                "ContainerChildQequenceNumber",
+                "ContainerChildSequenceNumber",
                 "pos.GrossLineItemQty",
                 "pos.NetDiscountedSalesQty",
                 "pos.sugars",
