@@ -225,6 +225,8 @@ def add_customization(spark, df, date_range=None):
         .distinct()
     )
 
+    var = df.schema.names
+
     df = (
         df
         .withColumn(
@@ -245,7 +247,7 @@ def add_customization(spark, df, date_range=None):
             how="left"
         )
         .select(
-            ["A." + x for x in df.schema.names] +
+            ["A." + x for x in var] +
             [
                 "DefaultFlavorType",
                 "FlavorModification",
