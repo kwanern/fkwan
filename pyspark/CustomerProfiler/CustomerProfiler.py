@@ -52,7 +52,7 @@ class Profiler(object):
                 "Customer_Type",
                 "pos.Id",
                 "P30_Trans_Freq",
-                "Product",
+                "Product_Cohort",
                 "ProductTypeDescription",
                 "ProductTypeId",
                 "ProductCategoryDescription",
@@ -217,11 +217,11 @@ class Profiler(object):
                 how="inner"
             )
             .withColumn(
-                "Product",
+                "Product_Cohort",
                 concat_string_arrays(*[re.sub("\s", "_", i) for i in self.products_names])
             )
             .select(self.var)
-            .filter(sqlf.col("Product") != '')
+            .filter(sqlf.col("Product_Cohort") != '')
         )
 
         return table_overlap
@@ -238,7 +238,7 @@ class Profiler(object):
         ind = (
             self.pf_spdf
             .alias("ind")
-            .select(self.grp_var + ["Product"])
+            .select(self.grp_var + ["Product_Cohort"])
             .distinct()
         )
 
@@ -250,7 +250,7 @@ class Profiler(object):
                 how="inner"
             )
             .select(self.var)
-            .filter(sqlf.col("Product") != '')
+            .filter(sqlf.col("Product_Cohort") != '')
         )
 
         return table_a
@@ -268,14 +268,14 @@ class Profiler(object):
         if len(self.products_names) != 2:
             return print("This function can only accept Profiler with 2 customers.")
 
-        self.var.remove("Product")
+        self.var.remove("Product_Cohort")
 
         proportion = (
             self.pf_spdf.alias("ind")
             .join(
                 (
                     self.pf_spdf
-                    .filter(sqlf.col("Product") == self.products_names[0])
+                    .filter(sqlf.col("Product_Cohort") == self.products_names[0])
                 )
                 .alias("A"),
                 sqlf.col("ind.Id") == sqlf.col("A.Id"),
@@ -284,7 +284,7 @@ class Profiler(object):
             .join(
                 (
                     self.pf_spdf
-                    .filter(sqlf.col("Product") == self.products_names[1])
+                    .filter(sqlf.col("Product_Cohort") == self.products_names[1])
                 )
                 .alias("B"),
                 sqlf.col("ind.Id") == sqlf.col("B.Id"),

@@ -61,10 +61,10 @@ class Customer(object):
                 sqlf.col(self.level).isin(self.products_id)
             )
             .withColumn(
-                "Product",
+                "Product_Cohort",
                 sqlf.lit(self.products_names)
             )
-            .groupBy("Id", "Product")
+            .groupBy("Id", "Product_Cohort")
             .agg(
                 sqlf.sum(
                     sqlf.when(
