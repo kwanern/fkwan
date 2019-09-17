@@ -10,8 +10,9 @@ def add_customization(spark, df, date_range=None):
         :param date_range: date range. e.g. ("2018-07-02", "2019-06-30")
         :return: beverage segmentation spark table
 
-        Note: The table should have the following columns:
-              ["TransactionId", "TransactionLineNumber", "ContainerId", "ContainerChildSequenceNumber", "ItemNumber"]
+        Note: The table should have at least the following columns:
+              ["Customer_Type", "Id", "TransactionId", "ContainerId",
+              "ContainerChildSequenceNumber", "ItemNumber"]
     """
     if not date_range:
         custom_order = (
