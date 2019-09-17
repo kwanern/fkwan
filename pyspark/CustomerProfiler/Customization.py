@@ -11,7 +11,8 @@ def add_customization(spark, df, date_range=None):
         :return: Transaction table with customizations appended
 
         Note: The table should have at least the following columns:
-              ["TransactionId", "ContainerId", "ContainerChildSequenceNumber", "ItemNumber"]
+              ["TransactionId", "ContainerId", "ContainerChildSequenceNumber",
+              "ProductTypeDescription", "SellableItemDescription", "ItemNumber"]
 
         >>> cust_df = cp.add_customization(spark, df, date_range)
     """
