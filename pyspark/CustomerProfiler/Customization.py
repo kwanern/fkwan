@@ -23,7 +23,8 @@ def add_customization(spark, df, date_range=None):
             spark
             .table("edap_pub_customersales.customized_orders")
             .filter(
-                sqlf.col("BusinessDate").between(str(Date(date_range[0])-3), str(Date(date_range[1])+3))
+                sqlf.col("BusinessDate").between(
+                    str(Date(date_range[0])-3), str(Date(date_range[1])+3))
             )
         )
 
@@ -65,16 +66,20 @@ def add_customization(spark, df, date_range=None):
         )
         .groupBy(["A." + x for x in df.schema.names])
         .agg(
-            sqlf.collect_set(sqlf.col("powder.SellableItemDescription")).alias("powder_modification"),
-            sqlf.collect_set(sqlf.col("drizzle.SellableItemDescription")).alias("drizzle_modification")
+            sqlf.collect_set(sqlf.col("powder.SellableItemDescription")).alias(
+                "powder_modification"),
+            sqlf.collect_set(sqlf.col("drizzle.SellableItemDescription")).alias(
+                "drizzle_modification")
         )
     )
 
     df_1 = (
         custom_order.alias("A")
         .join(
-            spark.table("edap_pub_customersales.pos_transaction_header").alias("B"),
-            sqlf.col("A.SalesTransactionId") == sqlf.col("B.SalesTransactionId"),
+            spark.table(
+                "edap_pub_customersales.pos_transaction_header").alias("B"),
+            sqlf.col("A.SalesTransactionId") == sqlf.col(
+                "B.SalesTransactionId"),
             how="left"
         )
         .withColumn(
@@ -90,12 +95,14 @@ def add_customization(spark, df, date_range=None):
         )
         .withColumn(
             "FlavorModification",
-            sqlf.when(sqlf.col("A.ParentRecipeFlavorType") != sqlf.col("A.FingerprintFlavorType"), "Modified Flavor")
-                .otherwise("Default Flavor")
+            sqlf.when(sqlf.col("A.ParentRecipeFlavorType") != sqlf.col(
+                "A.FingerprintFlavorType"), "Modified Flavor")
+            .otherwise("Default Flavor")
         )
         .withColumn(
             "parent_flavor_quantity",
-            sqlf.coalesce(sqlf.col("tmp.parentrecipeflavorquantity"), sqlf.lit(0))
+            sqlf.coalesce(
+                sqlf.col("tmp.parentrecipeflavorquantity"), sqlf.lit(0))
         )
         .withColumn(
             "beverage_flavor_quantity",
@@ -103,11 +110,13 @@ def add_customization(spark, df, date_range=None):
         )
         .withColumn(
             "parent_sweetness_quantity",
-            sqlf.coalesce(sqlf.col("tmp.parentrecipesweetnessquantity"), sqlf.lit(0))
+            sqlf.coalesce(
+                sqlf.col("tmp.parentrecipesweetnessquantity"), sqlf.lit(0))
         )
         .withColumn(
             "beverage_sweetness_quantity",
-            sqlf.coalesce(sqlf.col("tmp.beveragesweetnessquantity"), sqlf.lit(0))
+            sqlf.coalesce(
+                sqlf.col("tmp.beveragesweetnessquantity"), sqlf.lit(0))
         )
         .withColumn(
             "TransactionLineNumber",
@@ -123,12 +132,16 @@ def add_customization(spark, df, date_range=None):
                   "FingerprintMilkType",
                   "ParentRecipeWhipType",
                   "FingerprintWhipType"
-                ])
+                  ])
         .agg(
-            sqlf.sum(sqlf.col("parent_flavor_quantity")).alias("parent_flavor_quantity"),
-            sqlf.sum(sqlf.col("beverage_flavor_quantity")).alias("beverage_flavor_quantity"),
-            sqlf.sum(sqlf.col("parent_sweetness_quantity")).alias("parent_sweetness_quantity"),
-            sqlf.sum(sqlf.col("beverage_sweetness_quantity")).alias("beverage_sweetness_quantity")
+            sqlf.sum(sqlf.col("parent_flavor_quantity")
+                     ).alias("parent_flavor_quantity"),
+            sqlf.sum(sqlf.col("beverage_flavor_quantity")
+                     ).alias("beverage_flavor_quantity"),
+            sqlf.sum(sqlf.col("parent_sweetness_quantity")
+                     ).alias("parent_sweetness_quantity"),
+            sqlf.sum(sqlf.col("beverage_sweetness_quantity")
+                     ).alias("beverage_sweetness_quantity")
         )
     )
 
@@ -141,11 +154,12 @@ def add_customization(spark, df, date_range=None):
         )
         .withColumn(
             "FlavorPumpsModification",
-            sqlf.when(sqlf.col("beverage_flavor_quantity") > sqlf.col("parent_flavor_quantity"), 'Increase pumps')
-                .when((sqlf.col("beverage_flavor_quantity") < sqlf.col("parent_flavor_quantity")) & (
-                        sqlf.col("beverage_flavor_quantity") == 0), 'Decrease to Unflavored')
-                .when(sqlf.col("beverage_flavor_quantity") < sqlf.col("parent_flavor_quantity"), 'Decrease pumps')
-                .otherwise("Default pumps")
+            sqlf.when(sqlf.col("beverage_flavor_quantity") > sqlf.col(
+                "parent_flavor_quantity"), 'Increase pumps')
+            .when((sqlf.col("beverage_flavor_quantity") < sqlf.col("parent_flavor_quantity")) & (
+                sqlf.col("beverage_flavor_quantity") == 0), 'Decrease to Unflavored')
+            .when(sqlf.col("beverage_flavor_quantity") < sqlf.col("parent_flavor_quantity"), 'Decrease pumps')
+            .otherwise("Default pumps")
         )
         .withColumn(
             "DefaultSugarType",
@@ -156,33 +170,39 @@ def add_customization(spark, df, date_range=None):
             "SugarModification",
             sqlf.when(sqlf.col("beverage_sweetness_quantity") > sqlf.col("parent_sweetness_quantity"),
                       'Modified Up Sweetness')
-                .when((sqlf.col("beverage_sweetness_quantity") < sqlf.col("parent_sweetness_quantity")) & (
-                        sqlf.col("beverage_sweetness_quantity") == 0), 'Modified Down to Sugar Free')
-                .when(sqlf.col("beverage_sweetness_quantity") < sqlf.col("parent_sweetness_quantity"),
-                      'Modified Down Sweetness')
-                .otherwise("Default")
+            .when((sqlf.col("beverage_sweetness_quantity") < sqlf.col("parent_sweetness_quantity")) & (
+                sqlf.col("beverage_sweetness_quantity") == 0), 'Modified Down to Sugar Free')
+            .when(sqlf.col("beverage_sweetness_quantity") < sqlf.col("parent_sweetness_quantity"),
+                  'Modified Down Sweetness')
+            .otherwise("Default")
         )
         .withColumn(
             "DefaultMilkType",
-            sqlf.coalesce(sqlf.col("ParentRecipeMilkType"), sqlf.lit("No Milk"))
+            sqlf.coalesce(sqlf.col("ParentRecipeMilkType"),
+                          sqlf.lit("No Milk"))
         )
         .withColumn(
             "MilkModification",
             sqlf.when(
-                sqlf.col("FingerprintMilkType") != sqlf.col("ParentRecipeMilkType"),
-                sqlf.coalesce(sqlf.col("FingerprintMilkType"), sqlf.lit("No Milk"))
+                sqlf.col("FingerprintMilkType") != sqlf.col(
+                    "ParentRecipeMilkType"),
+                sqlf.coalesce(sqlf.col("FingerprintMilkType"),
+                              sqlf.lit("No Milk"))
             )
             .otherwise("Default")
         )
         .withColumn(
             "DefaultWhipType",
-            sqlf.coalesce(sqlf.col("ParentRecipeWhipType"), sqlf.lit("No Whip"))
+            sqlf.coalesce(sqlf.col("ParentRecipeWhipType"),
+                          sqlf.lit("No Whip"))
         )
         .withColumn(
             "WhipModification",
             sqlf.when(
-                sqlf.col("FingerprintWhipType") != sqlf.col("ParentRecipeWhipType"),
-                sqlf.coalesce(sqlf.col("FingerprintWhipType"), sqlf.lit("No Whip"))
+                sqlf.col("FingerprintWhipType") != sqlf.col(
+                    "ParentRecipeWhipType"),
+                sqlf.coalesce(sqlf.col("FingerprintWhipType"),
+                              sqlf.lit("No Whip"))
             )
             .otherwise("Default")
         )
@@ -200,7 +220,7 @@ def add_customization(spark, df, date_range=None):
                  "MilkModification",
                  "DefaultWhipType",
                  "WhipModification"
-                ])
+                 ])
         .distinct()
     )
 
@@ -208,7 +228,8 @@ def add_customization(spark, df, date_range=None):
         df
         .withColumn(
             "TransactionLineNumber_2",
-            sqlf.dense_rank().over(Window.partitionBy("TransactionId").orderBy(sqlf.regexp_replace("ContainerId", '^(.*?)\-', '').cast(IntegerType())))
+            sqlf.dense_rank().over(Window.partitionBy("TransactionId").orderBy(
+                sqlf.regexp_replace("ContainerId", '^(.*?)\-', '').cast(IntegerType())))
         )
     )
 
@@ -218,7 +239,8 @@ def add_customization(spark, df, date_range=None):
             custom_order.alias("custom"),
             (sqlf.col("A.TransactionId") == sqlf.col("custom.TranId")) &
             ((sqlf.col("A.TransactionLineNumber_2")-1) == sqlf.col("custom.TransactionLineNumber")) &
-            (sqlf.col("A.ItemNumber") == sqlf.col("custom.BeverageParentSKUNumber")),
+            (sqlf.col("A.ItemNumber") == sqlf.col(
+                "custom.BeverageParentSKUNumber")),
             how="left"
         )
         .select(
