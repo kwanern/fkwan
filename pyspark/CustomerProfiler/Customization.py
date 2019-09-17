@@ -23,7 +23,7 @@ def add_customization(spark, df, date_range=None):
             spark
             .table("edap_pub_customersales.customized_orders")
             .filter(
-                sqlf.col("BusinessDate").between(pd.to_datetime(date_range[0]).date()+days(-3), pd.to_datetime(date_range[1]).date()+days(+3))
+                sqlf.col("BusinessDate").between(str(Date(date_range[0])-3), str(Date(date_range[1])+3))
             )
         )
 
