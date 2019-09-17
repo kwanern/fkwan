@@ -4,11 +4,11 @@ from .Customer import *
 
 def add_customization(spark, df, date_range=None):
     """
-        This is a function that append customizations to transaction table.
+        This is a function that append customizations to the transaction table.
         :param spark: spark object
         :param df: spark table
         :param date_range: date range. e.g. ("2018-07-02", "2019-06-30")
-        :return: beverage segmentation spark table
+        :return: Transaction table with customizations appended
 
         Note: The table should have at least the following columns:
               ["Customer_Type", "Id", "TransactionId", "ContainerId",
