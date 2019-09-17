@@ -205,11 +205,19 @@ def add_customization(spark, df, date_range=None):
     )
 
     df = (
+        df
+        .withColumn(
+            "TransactionLineNumber_2",
+            sqlf.row_number().over(Window.partitionBy("TransactionId", "containerId").orderBy("TransactionId","containerId"))
+        )
+    )
+
+    df = (
         df.alias("A")
         .join(
             custom_order.alias("custom"),
             (sqlf.col("A.TransactionId") == sqlf.col("custom.TranId")) &
-            (sqlf.col("A.TransactionLineNumber") == sqlf.col("custom.TransactionLineNumber")) &
+            ((sqlf.col("A.TransactionLineNumber_2")-1) == sqlf.col("custom.TransactionLineNumber")) &
             (sqlf.col("A.ItemNumber") == sqlf.col("custom.BeverageParentSKUNumber")),
             how="left"
         )
