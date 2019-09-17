@@ -17,15 +17,13 @@ def add_customization(spark, df, date_range=None):
         custom_order = (
             spark
             .table("edap_pub_customersales.customized_orders")
-            .filter(sqlf.col("BeverageProductCategory").isin('Espresso', 'Coffee', 'Refreshment', 'Frappuccino', 'Tea'))
         )
     else:
         custom_order = (
             spark
             .table("edap_pub_customersales.customized_orders")
             .filter(
-                sqlf.col("BusinessDate").between(date_range[0], date_range[1]) &
-                sqlf.col("BeverageProductCategory").isin('Espresso', 'Coffee', 'Refreshment', 'Frappuccino', 'Tea')
+                sqlf.col("BusinessDate").between(date_range[0], date_range[1])
             )
         )
 
@@ -113,7 +111,7 @@ def add_customization(spark, df, date_range=None):
         )
         .withColumn(
             "TransactionLineNumber",
-            sqlf.substring(sqlf.col("A.OrderedProductId"), -1, 1)
+            sqlf.regexp_replace(sqlf.col("A.OrderedProductId"), '^(.*?)\-', '')
         )
         .groupBy(["A.OrderedProductId",
                   "A.SalesTransactionId",
