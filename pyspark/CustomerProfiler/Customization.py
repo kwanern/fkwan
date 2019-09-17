@@ -164,7 +164,7 @@ def add_customization(spark, df, date_range=None):
         .withColumn(
             "DefaultSugarType",
             sqlf.when(sqlf.col("parent_sweetness_quantity") == 0, 'Sugar Free')
-                .otherwise("Sweetness")
+                .otherwise("Sweet")
         )
         .withColumn(
             "SugarModification",
