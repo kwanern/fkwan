@@ -208,7 +208,7 @@ def add_customization(spark, df, date_range=None):
         df
         .withColumn(
             "TransactionLineNumber_2",
-            sqlf.row_number().over(Window.partitionBy("TransactionId", "containerId").orderBy("TransactionId","containerId"))
+            sqlf.dense_rank().over(Window.partitionBy("TransactionId").orderBy(sqlf.regexp_replace("ContainerId", '^(.*?)\-', '').cast(IntegerType())))
         )
     )
 
