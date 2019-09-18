@@ -35,12 +35,13 @@ class Profiler(object):
         self.indicator = indicator
 
         if granularity == "Period":
-            date_granularity = ["pos.FiscalYearNumber", "pos.FiscalPeriodInYearNumber"]
+            date_granularity = ["pos.FiscalYearNumber", "pos.FiscalQuarterInYearNumber", "pos.FiscalPeriodInYearNumber"]
         elif granularity == "Week":
-            date_granularity = ["pos.FiscalYearNumber", "pos.FiscalPeriodInYearNumber", "pos.FiscalWeekInYearNumber"]
+            date_granularity = ["pos.FiscalYearNumber", "pos.FiscalQuarterInYearNumber", "pos.FiscalPeriodInYearNumber", "pos.FiscalWeekInYearNumber"]
         else:
             date_granularity = [
                 "pos.FiscalYearNumber",
+                "pos.FiscalQuarterInYearNumber",
                 "pos.FiscalPeriodInYearNumber",
                 "pos.FiscalWeekInYearNumber",
                 "pos.BusinessDate"
