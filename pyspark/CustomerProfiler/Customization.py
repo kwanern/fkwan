@@ -166,7 +166,7 @@ def add_customization(spark, df, date_range=None):
         )
         .withColumn(
             "DefaultSugarType",
-            sqlf.when(sqlf.col("parent_sweetness_quantity") == 0, 'Sugar Free')
+            sqlf.when(sqlf.col("parent_sweetness_quantity") == 0, 'No Sugar')
                 .otherwise("Sweet")
         )
         .withColumn(
@@ -174,7 +174,7 @@ def add_customization(spark, df, date_range=None):
             sqlf.when(sqlf.col("beverage_sweetness_quantity") > sqlf.col("parent_sweetness_quantity"),
                       'Modified Up Sweetness')
             .when((sqlf.col("beverage_sweetness_quantity") < sqlf.col("parent_sweetness_quantity")) & (
-                sqlf.col("beverage_sweetness_quantity") == 0), 'Modified Down to Sugar Free')
+                sqlf.col("beverage_sweetness_quantity") == 0), 'Modified Down to No Sugar')
             .when(sqlf.col("beverage_sweetness_quantity") < sqlf.col("parent_sweetness_quantity"),
                   'Modified Down Sweetness')
             .otherwise("Default")
