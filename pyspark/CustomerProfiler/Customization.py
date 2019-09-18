@@ -130,6 +130,10 @@ def add_customization(spark, df, date_range=None):
                   "TransactionLineNumber",
                   "B.TranId",
                   "BeverageParentSKUNumber",
+                  "A.parentrecipeflavorquantity",
+                  "A.beverageflavorquantity",
+                  "A.parentrecipesweetnessquantity",
+                  "A.beveragesweetnessquantity",
                   "FlavorModification",
                   "ParentRecipeMilkType",
                   "FingerprintMilkType",
@@ -217,8 +221,12 @@ def add_customization(spark, df, date_range=None):
                  "DefaultFlavorType",
                  "FlavorModification",
                  "FlavorPumpsModification",
+                 "parentrecipeflavorquantity",
+                 "beverageflavorquantity",
                  "DefaultSugarType",
                  "SugarModification",
+                 "parentrecipesweetnessquantity",
+                 "beveragesweetnessquantity",
                  "DefaultMilkType",
                  "MilkModification",
                  "DefaultWhipType",
@@ -252,14 +260,18 @@ def add_customization(spark, df, date_range=None):
             ["A." + x for x in var] +
             [
                 "DefaultFlavorType",
-                "FlavorModification",
-                "FlavorPumpsModification",
-                "DefaultSugarType",
-                "SugarModification",
-                "DefaultMilkType",
-                "MilkModification",
-                "DefaultWhipType",
-                "WhipModification"
+                 "FlavorModification",
+                 "FlavorPumpsModification",
+                 "parentrecipeflavorquantity",
+                 "beverageflavorquantity",
+                 "DefaultSugarType",
+                 "SugarModification",
+                 "parentrecipesweetnessquantity",
+                 "beveragesweetnessquantity",
+                 "DefaultMilkType",
+                 "MilkModification",
+                 "DefaultWhipType",
+                 "WhipModification"
             ]
         )
     )
