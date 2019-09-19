@@ -304,7 +304,7 @@ class Profiler(object):
         cohort = (
             proportion
             .withColumn(
-                "Cohort",
+                "Product_Cohort",
                 sqlf.when(
                     sqlf.col("Proportion") <= rng[0],
                     self.products_names[1] + " Dominant"
@@ -315,7 +315,7 @@ class Profiler(object):
                 )
                 .otherwise("Not Dominant")
             )
-            .select(self.grp_var + ["Proportion", "Cohort"])
+            .select(self.grp_var + ["Proportion", "Product_Cohort"])
             .distinct()
         )
 
@@ -338,7 +338,7 @@ class Profiler(object):
                 )
                 .otherwise(sqlf.col("ind.Cohort"))
             )
-            .select(self.var + ["Proportion", "Cohort", "Cohort_2"])
+            .select(self.var + ["Proportion", "Product_Cohort", "Cohort_2"])
         )
 
         return result
