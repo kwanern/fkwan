@@ -336,7 +336,7 @@ class Profiler(object):
                     sqlf.col("ind.Proportion") == 0,
                     self.products_names[1] + " only"
                 )
-                .otherwise(sqlf.col("ind.Cohort"))
+                .otherwise(sqlf.col("ind.Product_Cohort"))
             )
             .select(self.var + ["Proportion", "Product_Cohort", "Cohort_2"])
         )
