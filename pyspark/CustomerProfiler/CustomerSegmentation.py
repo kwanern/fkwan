@@ -156,7 +156,7 @@ class Segmentation(object):
                 self.pos
                 .withColumn(
                     "Product",
-                    sqlf.lit("All Products")
+                    sqlf.lit("Baseline")
                 )
                 .withColumn(
                     "beverage_primary_segment",
@@ -287,7 +287,7 @@ class Segmentation(object):
                 self.pos
                 .withColumn(
                     "Product",
-                    sqlf.lit("All Products")
+                    sqlf.lit("Baseline")
                 )
                 .withColumn(
                     "flavor_primary_segment",
