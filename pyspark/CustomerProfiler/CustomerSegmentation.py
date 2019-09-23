@@ -122,7 +122,11 @@ class Segmentation(object):
                 "Product",
                 sqlf.lit(self.name)
             )
-            .groupBy("Product", "Customer_Type", "bev_primary_segment")
+            .withColumn(
+                "beverage_primary_segment",
+                sqlf.coalesce(sqlf.col("sr.bev_primary_segment"),sqlf.col("nonsr.bev_primary_segment"))
+            )
+            .groupBy("Product", "Customer_Type", "beverage_primary_segment")
             .agg(
                 (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
                     "units_cust"),
@@ -154,7 +158,7 @@ class Segmentation(object):
                     "Product",
                     sqlf.lit("All Products")
                 )
-                .groupBy("Product", "Customer_Type", "bev_primary_segment")
+                .groupBy("Product", "Customer_Type", "beverage_primary_segment")
                 .agg(
                     (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
                         "units_cust"),
@@ -244,6 +248,10 @@ class Segmentation(object):
             .withColumn(
                 "Product",
                 sqlf.lit(self.name)
+            )
+            .withColumn(
+                "flavor_primary_segment",
+                sqlf.coalesce(sqlf.col("sr.flavor_primary_segment"), sqlf.col("nonsr.flavor_primary_segment"))
             )
             .groupBy("Product", "Customer_Type", "flavor_primary_segment")
             .agg(
