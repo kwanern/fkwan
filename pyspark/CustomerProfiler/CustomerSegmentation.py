@@ -139,15 +139,15 @@ class Segmentation(object):
             result
             .withColumn(
                 'units_cust_proportion',
-                sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy())
+                sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy("Customer_Type"))
             )
             .withColumn(
                 'total_units_proportion',
-                sqlf.col('units') / sqlf.sum('units').over(Window.partitionBy())
+                sqlf.col('units') / sqlf.sum('units').over(Window.partitionBy("Customer_Type"))
             )
             .withColumn(
                 'total_nds_proportion',
-                sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
+                sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy("Customer_Type"))
             )
         )
 
@@ -175,15 +175,15 @@ class Segmentation(object):
                 base
                 .withColumn(
                     'units_cust_proportion',
-                    sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy())
+                    sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy("Customer_Type"))
                 )
                 .withColumn(
                     'total_units_proportion',
-                    sqlf.col('units') / sqlf.sum('units').over(Window.partitionBy())
+                    sqlf.col('units') / sqlf.sum('units').over(Window.partitionBy("Customer_Type"))
                 )
                 .withColumn(
                     'total_nds_proportion',
-                    sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
+                    sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy("Customer_Type"))
                 )
             )
             return result.union(base)
@@ -270,15 +270,15 @@ class Segmentation(object):
             result
             .withColumn(
                 'units_cust_proportion',
-                sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy())
+                sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy("Customer_Type"))
             )
             .withColumn(
                 'total_units_proportion',
-                sqlf.col('units') / sqlf.sum('units').over(Window.partitionBy())
+                sqlf.col('units') / sqlf.sum('units').over(Window.partitionBy("Customer_Type"))
             )
             .withColumn(
                 'total_nds_proportion',
-                sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
+                sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy("Customer_Type"))
             )
         )
 
@@ -306,15 +306,15 @@ class Segmentation(object):
                 base
                 .withColumn(
                     'units_cust_proportion',
-                    sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy())
+                    sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy("Customer_Type"))
                 )
                 .withColumn(
                     'total_units_proportion',
-                    sqlf.col('units') / sqlf.sum('units').over(Window.partitionBy())
+                    sqlf.col('units') / sqlf.sum('units').over(Window.partitionBy("Customer_Type"))
                 )
                 .withColumn(
                     'total_nds_proportion',
-                    sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy())
+                    sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy("Customer_Type"))
                 )
             )
             return result.union(base)
