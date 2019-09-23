@@ -128,7 +128,7 @@ class Segmentation(object):
             )
             .groupBy("Product", "Customer_Type", "beverage_primary_segment")
             .agg(
-                (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
+                (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("Id"))).alias(
                     "units_cust"),
                 (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
                 (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS")
@@ -164,7 +164,7 @@ class Segmentation(object):
                 )
                 .groupBy("Product", "Customer_Type", "beverage_primary_segment")
                 .agg(
-                    (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
+                    (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("Id"))).alias(
                         "units_cust"),
                     (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
                     (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS")
@@ -259,7 +259,7 @@ class Segmentation(object):
             )
             .groupBy("Product", "Customer_Type", "flavor_primary_segment")
             .agg(
-                (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
+                (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("Id"))).alias(
                     "units_cust"),
                 (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
                 (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS")
@@ -295,7 +295,7 @@ class Segmentation(object):
                 )
                 .groupBy("Product", "Customer_Type", "flavor_primary_segment")
                 .agg(
-                    (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("AccountId"))).alias(
+                    (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("Id"))).alias(
                         "units_cust"),
                     (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
                     (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS")
