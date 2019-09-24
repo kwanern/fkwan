@@ -152,6 +152,10 @@ class Segmentation(object):
                 'total_nds_proportion',
                 sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy("Customer_Type"))
             )
+            .withColumn(
+                'total_cust_proportion',
+                sqlf.col('Customer_Counts') / sqlf.sum('Customer_Counts').over(Window.partitionBy("Customer_Type"))
+            )
         )
 
         if base:
@@ -188,6 +192,10 @@ class Segmentation(object):
                 .withColumn(
                     'total_nds_proportion',
                     sqlf.col('NDS') / sqlf.sum('NDS').over(Window.partitionBy("Customer_Type"))
+                )
+                .withColumn(
+                    'total_cust_proportion',
+                    sqlf.col('Customer_Counts') / sqlf.sum('Customer_Counts').over(Window.partitionBy("Customer_Type"))
                 )
             )
             return result.union(base)
