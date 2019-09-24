@@ -133,7 +133,8 @@ class Segmentation(object):
                 (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("Id"))).alias(
                     "units_cust"),
                 (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
-                (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS")
+                (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS"),
+                (sqlf.sum(sqlf.col("Id"))).alias("Customer_Counts")
             )
         )
 
@@ -169,7 +170,8 @@ class Segmentation(object):
                     (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("Id"))).alias(
                         "units_cust"),
                     (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
-                    (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS")
+                    (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS"),
+                    (sqlf.sum(sqlf.col("Id"))).alias("Customer_Counts")
                 )
             )
 
