@@ -25,7 +25,7 @@ Customer Profiler Packages:
 
 ![Image of Customer Profiler](./img/customer_profiler.png)
 
-## Versioning
+## Versions
 
 * [Version 1.3.5] Customer Segmentation - Reformat code, add food segmentation
 
