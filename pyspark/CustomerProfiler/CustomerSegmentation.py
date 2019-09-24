@@ -60,7 +60,7 @@ class Segmentation(object):
             )
         )
 
-    def __segmentation(self, tp, product, cohort=None, base=False, title=None):
+    def __segmentation(self, tp, product, cohort, base, title):
         self.start_date = product["Promo_Start_Date"]
         self.end_date = product["Promo_End_Date"]
         self.products_names = product["Product_Name"]
@@ -193,10 +193,10 @@ class Segmentation(object):
         return result
 
     def beverage_segmentation(self, product, tp="bev_primary_segment", cohort=None, base=False, title=None):
-        return self.__segmentation(self, product, tp=tp, cohort=cohort, base=base, title=title)
+        return self.__segmentation(product, tp, cohort, base, title)
 
     def flavor_segmentation(self, product, tp="flavor_primary_segment", cohort=None, base=False, title=None):
-        return self.__segmentation(self, product, tp=tp, cohort=cohort, base=base, title=title)
+        return self.__segmentation(product, tp, cohort, base, title)
 
     def food_segmentation(self, product, tp="food_primary_segment", cohort=None, base=False, title=None):
-        return self.__segmentation(self, product, tp=tp, cohort=cohort, base=base, title=title)
+        return self.__segmentation(product, tp, cohort, base, title)
