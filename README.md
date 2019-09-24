@@ -27,7 +27,7 @@ Customer Profiler Packages:
 
 ## Versioning
 
-Version 1.3.2
+* [Version 1.3.5] Customer Segmentation - Reformat code, add food segmentation
 
 ## Authors
 
