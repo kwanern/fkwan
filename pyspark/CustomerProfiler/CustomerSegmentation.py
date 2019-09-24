@@ -125,10 +125,10 @@ class Segmentation(object):
                 sqlf.lit(self.name)
             )
             .withColumn(
-                self.type,
+                self.type+"s",
                 sqlf.coalesce(sqlf.col("sr."+self.type),sqlf.col("nonsr."+self.type))
             )
-            .groupBy("Product", "Customer_Type", self.type)
+            .groupBy("Product", "Customer_Type", self.type+"s")
             .agg(
                 (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("Id"))).alias(
                     "units_cust"),
@@ -161,10 +161,10 @@ class Segmentation(object):
                     sqlf.lit("Baseline")
                 )
                 .withColumn(
-                    self.type,
+                    self.type+"s",
                     sqlf.coalesce(sqlf.col("sr."+self.type), sqlf.col("nonsr."+self.type))
                 )
-                .groupBy("Product", "Customer_Type", self.type)
+                .groupBy("Product", "Customer_Type", self.type+"s")
                 .agg(
                     (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("Id"))).alias(
                         "units_cust"),
@@ -193,10 +193,10 @@ class Segmentation(object):
         return result
 
     def beverage_segmentation(self, product, tp="bev_primary_segment", cohort=None, base=False, title=None):
-        return self.__segmentation(product, tp, cohort, base, title)
+        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title)
 
     def flavor_segmentation(self, product, tp="flavor_primary_segment", cohort=None, base=False, title=None):
-        return self.__segmentation(product, tp, cohort, base, title)
+        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title)
 
     def food_segmentation(self, product, tp="food_primary_segment", cohort=None, base=False, title=None):
-        return self.__segmentation(product, tp, cohort, base, title)
+        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title)
