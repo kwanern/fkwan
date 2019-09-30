@@ -22,7 +22,8 @@ def engagement(promo, cohort, promo_start_dt):
         >>>   "Purchased_Freq_Min": 1,
         >>>   "Purchased_Freq_Max": 999999
         >>> }
-        >>> engagement(spark, promo, cohort, Promo_Start_Date)
+        >>> promo = Customer(spark, promo)
+        >>> engagement(promo, cohort, Promo_Start_Date)
     """
 
     spark = promo.spark
