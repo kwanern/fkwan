@@ -28,6 +28,7 @@ Customer Profiler Packages:
 ## Versions
 
 * [Version 1.3.5] Customer Segmentation - Reformat code, add food segmentation
+* [Version 1.3.6] Cohort Metric - Engagement takes customer class
 
 ## Authors
 
