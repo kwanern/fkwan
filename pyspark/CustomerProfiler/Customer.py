@@ -51,6 +51,13 @@ class Customer(object):
                 )
                 .otherwise(sqlf.col("FirstPaymentToken"))
             )
+            .withColumn(
+                "CustomerType",
+                sqlf.when(
+                    sqlf.col("AccountId").isNotNull(), "SR"
+                )
+                .otherwise("Token")
+            )
         )
 
         # Select Cohort
@@ -64,7 +71,7 @@ class Customer(object):
                 "Product_Cohort",
                 sqlf.lit(self.products_names)
             )
-            .groupBy("Id", "Product_Cohort")
+            .groupBy("Id", "Product_Cohort", "CustomerType")
             .agg(
                 sqlf.sum(
                     sqlf.when(

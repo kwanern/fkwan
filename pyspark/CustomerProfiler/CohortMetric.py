@@ -3,7 +3,7 @@ from .CustomerProfiler import *
 from .Customer import *
 
 
-def engagement(spark, promo, cohort, promo_start_dt):
+def engagement(promo, cohort, promo_start_dt):
     """
         This is a function that returns the cohort metrics such as engagement rate and in cohort percentage.
 
@@ -25,6 +25,8 @@ def engagement(spark, promo, cohort, promo_start_dt):
         >>> engagement(spark, promo, cohort, Promo_Start_Date)
     """
 
+    spark = promo.spark
+
     old_customers = (
         spark
         .table("fkwan.pos_line_item")
@@ -43,18 +45,18 @@ def engagement(spark, promo, cohort, promo_start_dt):
             .otherwise(sqlf.col("FirstPaymentToken"))
         )
         .withColumn(
-            "Customer_Type",
+            "CustomerType",
             sqlf.when(
                 sqlf.col("AccountId").isNotNull(), "SR"
             )
             .otherwise("Token")
         )
-        .select("Id", "Customer_Type")
+        .select("Id", "CustomerType")
         .distinct()
     )
 
     promo_customer_total_count = (
-        promo
+        promo.pf_spdf
         .alias("promo")
         .join(
             old_customers.alias("old"),
@@ -62,7 +64,7 @@ def engagement(spark, promo, cohort, promo_start_dt):
             how="left"
         )
         .groupBy(
-            "promo.Customer_Type"
+            "promo.CustomerType"
         )
         .agg(
             sqlf.countDistinct(
@@ -86,14 +88,15 @@ def engagement(spark, promo, cohort, promo_start_dt):
     ).toPandas()
 
     cohort_customer_total_count = (
-        cohort.alias("cohort")
+        cohort.pf_spdf
+        .alias("cohort")
         .join(
             promo.alias("promo"),
             sqlf.col("cohort.Id") == sqlf.col("promo.Id"),
             how="left"
         )
         .groupBy(
-            "cohort.Customer_Type"
+            "cohort.CustomerType"
         )
         .agg(
             sqlf.countDistinct(
@@ -148,8 +151,8 @@ def engagement(spark, promo, cohort, promo_start_dt):
         \n{1}
         \n-------------------------
         """.format(
-            promo_customer_total_count.set_index('Customer_Type').T,
-            cohort_customer_total_count.set_index('Customer_Type').T
+            promo_customer_total_count.set_index('CustomerType').T,
+            cohort_customer_total_count.set_index('CustomerType').T
         )
     )
 
