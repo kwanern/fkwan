@@ -60,7 +60,7 @@ class Segmentation(object):
             )
         )
 
-    def __segmentation(self, tp, product, cohort, base, title):
+    def __segmentation(self, tp, product, cohort, base, title, base_filter):
         self.start_date = product["Promo_Start_Date"]
         self.end_date = product["Promo_End_Date"]
         self.products_names = product["Product_Name"]
@@ -161,6 +161,7 @@ class Segmentation(object):
         if base:
             base = (
                 self.pos
+                .filter(sqlf.col("ProductTypeDescription") == base_filter)
                 .withColumn(
                     "Product",
                     sqlf.lit("Baseline")
@@ -203,10 +204,10 @@ class Segmentation(object):
         return result
 
     def beverage_segmentation(self, product, tp="bev_primary_segment", cohort=None, base=False, title=None):
-        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title)
+        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Beverage")
 
     def flavor_segmentation(self, product, tp="flavor_primary_segment", cohort=None, base=False, title=None):
-        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title)
+        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Beverage")
 
     def food_segmentation(self, product, tp="food_primary_segment", cohort=None, base=False, title=None):
-        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title)
+        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Food")
