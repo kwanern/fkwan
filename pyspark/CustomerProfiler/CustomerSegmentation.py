@@ -206,64 +206,45 @@ class Segmentation(object):
 
         return self.result
 
-    def __benchmark(self, result, benchmark):
-        result = (
-            result.alias("A")
-            .join(
-                result.alias("B"),
-                (sqlf.col("A.Customer_Type") == sqlf.col("B.Customer_Type")) & \
-                (sqlf.col("A."+self.tp) == sqlf.col("B."+self.tp)),
-                how="inner"
-            )
-            .filter(
-                sqlf.col("B.Product") == benchmark
-            )
-            .withColumn(
-                "benchmark_units_cust_proportion",
-                sqlf.col("B.units_cust_proportion")
-            )
-            .withColumn(
-                "benchmark_total_units_proportion",
-                sqlf.col("B.total_units_proportion")
-            )
-            .withColumn(
-                "benchmark_total_nds_proportion",
-                sqlf.col("B.total_nds_proportion")
-            )
-            .withColumn(
-                "benchmark_total_cust_proportion",
-                sqlf.col("B.total_cust_proportion")
-            )
-        )
-
-        return result
-
-    def beverage_segmentation(self, product, tp="bev_primary_segment", cohort=None, base=False, benchmark=None, title=None):
-        if benchmark:
-            return self.__benchmark(
-                self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title,
-                                    base_filter="Beverage"),
-                benchmark=benchmark
-            )
+    def beverage_segmentation(self, product, tp="bev_primary_segment", cohort=None, base=False, title=None):
         return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Beverage")
 
-    def flavor_segmentation(self, product, tp="flavor_primary_segment", cohort=None, base=False, benchmark=None, title=None):
-        if benchmark:
-            return self.__benchmark(
-                self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title,
-                                    base_filter="Beverage"),
-                benchmark=benchmark
-            )
+    def flavor_segmentation(self, product, tp="flavor_primary_segment", cohort=None, base=False, title=None):
         return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Beverage")
 
-    def food_segmentation(self, product, tp="food_primary_segment", cohort=None, base=False, benchmark=None, title=None):
-        if benchmark:
-            return self.__benchmark(
-                self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title,
-                                    base_filter="Food"),
-                benchmark=benchmark
-            )
+    def food_segmentation(self, product, tp="food_primary_segment", cohort=None, base=False, title=None):
         return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Food")
 
 
-
+def add_benchmark(result, benchmark):
+    tp = ["bev_primary_segment", "flavor_primary_segment", "food_primary_segment"]
+    tp = str(list(set(tp) & set(result.columns))[0])
+    result = (
+        result.alias("A")
+        .join(
+            result.alias("B"),
+            (sqlf.col("A.Customer_Type") == sqlf.col("B.Customer_Type")) & \
+            (sqlf.col("A."+tp) == sqlf.col("B."+tp)),
+            how="inner"
+        )
+        .filter(
+            sqlf.col("B.Product") == benchmark
+        )
+        .withColumn(
+            "benchmark_units_cust_proportion",
+            sqlf.col("B.units_cust_proportion")
+        )
+        .withColumn(
+            "benchmark_total_units_proportion",
+            sqlf.col("B.total_units_proportion")
+        )
+        .withColumn(
+            "benchmark_total_nds_proportion",
+            sqlf.col("B.total_nds_proportion")
+        )
+        .withColumn(
+            "benchmark_total_cust_proportion",
+            sqlf.col("B.total_cust_proportion")
+        )
+    )
+    return result
