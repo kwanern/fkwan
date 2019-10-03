@@ -219,6 +219,11 @@ class Segmentation(object):
 def add_benchmark(result, benchmark='Baseline'):
     tp = ["bev_primary_segments", "flavor_primary_segments", "food_primary_segments"]
     tp = str(list(set(tp) & set(result.columns))[0])
+    var = ["A."+result.columns] +\
+          ["benchmark_units_cust_proportion",
+           "benchmark_total_units_proportion",
+           "benchmark_total_nds_proportion",
+           "benchmark_total_cust_proportion"]
     result = (
         result.alias("A")
         .join(
@@ -246,5 +251,6 @@ def add_benchmark(result, benchmark='Baseline'):
             "benchmark_total_cust_proportion",
             sqlf.col("B.total_cust_proportion")
         )
+        .select(var)
     )
     return result
