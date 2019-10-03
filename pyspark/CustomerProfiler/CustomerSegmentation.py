@@ -128,7 +128,8 @@ class Segmentation(object):
                 self.type+"s",
                 sqlf.coalesce(sqlf.col("sr."+self.type),sqlf.col("nonsr."+self.type))
             )
-            .groupBy("Product", "Customer_Type", self.type+"s")
+            .groupBy(["ProductTypeDescription", "ProductCategoryDescription", "ProductStyleDescription",
+                      "Product", "Customer_Type", self.type+"s"])
             .agg(
                 (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("Id"))).alias(
                     "units_cust"),
@@ -170,7 +171,8 @@ class Segmentation(object):
                     self.type+"s",
                     sqlf.coalesce(sqlf.col("sr."+self.type), sqlf.col("nonsr."+self.type))
                 )
-                .groupBy("Product", "Customer_Type", self.type+"s")
+                .groupBy(["ProductTypeDescription", "ProductCategoryDescription", "ProductStyleDescription",
+                          "Product", "Customer_Type", self.type+"s"])
                 .agg(
                     (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("Id"))).alias(
                         "units_cust"),
