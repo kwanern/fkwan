@@ -69,6 +69,7 @@ class Segmentation(object):
         self.pch_frq_min = product["Purchased_Freq_Min"]
         self.pch_frq_max = product["Purchased_Freq_Max"]
         self.type = tp
+        self.result = None
 
         if title:
             self.name = title
@@ -117,7 +118,7 @@ class Segmentation(object):
                 )
             )
 
-        result = (
+        self.result = (
             self.pos
             .filter(sqlf.col(self.level).isin(self.products_id))
             .withColumn(
@@ -139,8 +140,8 @@ class Segmentation(object):
             )
         )
 
-        result = (
-            result
+        self.result = (
+            self.result
             .withColumn(
                 'units_cust_proportion',
                 sqlf.col('units_cust') / sqlf.sum('units_cust').over(Window.partitionBy("Customer_Type"))
@@ -201,9 +202,9 @@ class Segmentation(object):
                     sqlf.col('Customer_Counts') / sqlf.sum('Customer_Counts').over(Window.partitionBy("Customer_Type"))
                 )
             )
-            return result.union(base)
+            return self.result.union(base)
 
-        return result
+        return self.result
 
     def beverage_segmentation(self, product, tp="bev_primary_segment", cohort=None, base=False, title=None):
         return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Beverage")
@@ -213,3 +214,36 @@ class Segmentation(object):
 
     def food_segmentation(self, product, tp="food_primary_segment", cohort=None, base=False, title=None):
         return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Food")
+
+    def benchmark(self, benchmark='Baseline'):
+        result = (
+            self.result.alias("A")
+            .join(
+                self.result.alias("B"),
+                (sqlf.col("A.Customer_Type") == sqlf.col("B.Customer_Type")) & \
+                (sqlf.col("A."+self.tp) == sqlf.col("B."+self.tp)),
+                how="inner"
+            )
+            .filter(
+                sqlf.col("B.Product") == benchmark
+            )
+            .withColumn(
+                "benchmark_units_cust_proportion",
+                sqlf.col("B.units_cust_proportion")
+            )
+            .withColumn(
+                "benchmark_total_units_proportion",
+                sqlf.col("B.total_units_proportion")
+            )
+            .withColumn(
+                "benchmark_total_nds_proportion",
+                sqlf.col("B.total_nds_proportion")
+            )
+            .withColumn(
+                "benchmark_total_cust_proportion",
+                sqlf.col("B.total_cust_proportion")
+            )
+        )
+
+        return result
+
