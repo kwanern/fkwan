@@ -206,20 +206,11 @@ class Segmentation(object):
 
         return self.result
 
-    def beverage_segmentation(self, product, tp="bev_primary_segment", cohort=None, base=False, title=None):
-        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Beverage")
-
-    def flavor_segmentation(self, product, tp="flavor_primary_segment", cohort=None, base=False, title=None):
-        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Beverage")
-
-    def food_segmentation(self, product, tp="food_primary_segment", cohort=None, base=False, title=None):
-        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Food")
-
-    def benchmark(self, benchmark='Baseline'):
+    def __benchmark(self, result, benchmark):
         result = (
-            self.result.alias("A")
+            result.alias("A")
             .join(
-                self.result.alias("B"),
+                result.alias("B"),
                 (sqlf.col("A.Customer_Type") == sqlf.col("B.Customer_Type")) & \
                 (sqlf.col("A."+self.tp) == sqlf.col("B."+self.tp)),
                 how="inner"
@@ -246,4 +237,33 @@ class Segmentation(object):
         )
 
         return result
+
+    def beverage_segmentation(self, product, tp="bev_primary_segment", cohort=None, base=False, benchmark=None, title=None):
+        if benchmark:
+            return self.__benchmark(
+                self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title,
+                                    base_filter="Beverage"),
+                benchmark=benchmark
+            )
+        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Beverage")
+
+    def flavor_segmentation(self, product, tp="flavor_primary_segment", cohort=None, base=False, benchmark=None, title=None):
+        if benchmark:
+            return self.__benchmark(
+                self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title,
+                                           base_filter="Beverage"),
+                benchmark=benchmark
+            )
+        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Beverage")
+
+    def food_segmentation(self, product, tp="food_primary_segment", cohort=None, base=False, benchmark=None, title=None):
+        if benchmark:
+            return self.__benchmark(
+                self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title,
+                                    base_filter="Food"),
+                benchmark=benchmark
+            )
+        return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Food")
+
+
 
