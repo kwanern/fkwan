@@ -251,7 +251,7 @@ class Segmentation(object):
         if benchmark:
             return self.__benchmark(
                 self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title,
-                                           base_filter="Beverage"),
+                                    base_filter="Beverage"),
                 benchmark=benchmark
             )
         return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Beverage")
