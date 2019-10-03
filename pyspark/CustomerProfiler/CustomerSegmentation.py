@@ -216,7 +216,7 @@ class Segmentation(object):
         return self.__segmentation(product=product, tp=tp, cohort=cohort, base=base, title=title, base_filter="Food")
 
 
-def add_benchmark(result, benchmark):
+def add_benchmark(result, benchmark='Baseline'):
     tp = ["bev_primary_segment", "flavor_primary_segment", "food_primary_segment"]
     tp = str(list(set(tp) & set(result.columns))[0])
     result = (
