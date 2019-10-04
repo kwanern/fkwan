@@ -228,12 +228,10 @@ def add_benchmark(result, benchmark='Baseline'):
         result.alias("A")
         .join(
             result.alias("B"),
-            (sqlf.col("A.Customer_Type") == sqlf.col("B.Customer_Type")) & \
-            (sqlf.col("A."+tp) == sqlf.col("B."+tp)),
+            (sqlf.col("A.Customer_Type") == sqlf.col("B.Customer_Type")) &\
+            (sqlf.col("A."+tp) == sqlf.col("B."+tp)) &\
+            (sqlf.col("B.Product") == benchmark),
             how="inner"
-        )
-        .filter(
-            sqlf.col("B.Product") == benchmark
         )
         .withColumn(
             "benchmark_units_cust_proportion",
