@@ -219,7 +219,7 @@ class Segmentation(object):
 def add_benchmark(result, benchmark='Baseline'):
     tp = ["bev_primary_segments", "flavor_primary_segments", "food_primary_segments"]
     tp = str(list(set(tp) & set(result.columns))[0])
-    var = ["A."+result.columns] +\
+    var = ["A." + x for x in result.columns] +\
           ["benchmark_units_cust_proportion",
            "benchmark_total_units_proportion",
            "benchmark_total_nds_proportion",
