@@ -174,6 +174,18 @@ class Segmentation(object):
                     self.type+"s",
                     sqlf.coalesce(sqlf.col("sr."+self.type), sqlf.col("nonsr."+self.type))
                 )
+                .withColumn(
+                    "ProductTypeDescription",
+                    sqlf.lit("Baseline")
+                )
+                .withColumn(
+                    "ProductCategoryDescription",
+                    sqlf.lit("Baseline")
+                )
+                .withColumn(
+                    "ProductStyleDescription",
+                    sqlf.lit("Baseline")
+                )
                 .groupBy(["ProductTypeDescription", "ProductCategoryDescription", "ProductStyleDescription",
                           "Product", "Customer_Type", self.type+"s"])
                 .agg(
