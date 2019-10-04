@@ -135,7 +135,9 @@ class Segmentation(object):
                 (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("Id"))).alias(
                     "units_cust"),
                 (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
+                (sqlf.sum(sqlf.col("NetDiscountedSalesQty"))).alias("Net_units"),
                 (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS"),
+                (sqlf.sum(sqlf.col("GrossSalesLocalAmount"))).alias("Gross_sales"),
                 (sqlf.countDistinct(sqlf.col("Id"))).alias("Customer_Counts")
             )
         )
@@ -178,7 +180,9 @@ class Segmentation(object):
                     (sqlf.sum(sqlf.col("GrossLineItemQty")) / sqlf.countDistinct(sqlf.col("Id"))).alias(
                         "units_cust"),
                     (sqlf.sum(sqlf.col("GrossLineItemQty"))).alias("units"),
+                    (sqlf.sum(sqlf.col("NetDiscountedSalesQty"))).alias("Net_units"),
                     (sqlf.sum(sqlf.col("NetDiscountedSalesAmount"))).alias("NDS"),
+                    (sqlf.sum(sqlf.col("GrossSalesLocalAmount"))).alias("Gross_sales"),
                     (sqlf.countDistinct(sqlf.col("Id"))).alias("Customer_Counts")
                 )
             )
@@ -224,14 +228,20 @@ def add_benchmark(result, benchmark='Baseline'):
            "benchmark_total_units_proportion",
            "benchmark_total_nds_proportion",
            "benchmark_total_cust_proportion"]
+
+    baseline = (
+        result
+        .filter(sqlf.col("Product").isin(benchmark))
+        .distinct()
+    )
+
     result = (
         result.alias("A")
         .join(
-            result.alias("B"),
+            baseline.alias("B"),
             (sqlf.col("A.Customer_Type") == sqlf.col("B.Customer_Type")) &\
-            (sqlf.col("A."+tp) == sqlf.col("B."+tp)) &\
-            (sqlf.col("B.Product") == benchmark),
-            how="inner"
+            (sqlf.col("A."+tp) == sqlf.col("B."+tp)),
+            how="left"
         )
         .withColumn(
             "benchmark_units_cust_proportion",
