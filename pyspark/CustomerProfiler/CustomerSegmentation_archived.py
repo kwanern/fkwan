@@ -1,5 +1,4 @@
 from ...libraries import *
-from .Customer import *
 
 
 def beverage_segmentation(

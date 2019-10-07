@@ -1,5 +1,4 @@
-from ...libraries import *
-from .Customer import *
+from ...libraries import * 
 
 
 class Segmentation(object):
