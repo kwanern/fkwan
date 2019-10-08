@@ -1,5 +1,7 @@
-.vs/slnx.sqlite
-.vs/fkwan/v15/.suo
-pyspark/__pycache__/__init__.cpython-37.pyc
-pyspark/__pycache__/import_files.cpython-37.pyc
-.vs/VSWorkspaceState.json
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/fkwan/v15
+/.vs/slnx.sqlite
+/.vs/VSWorkspaceState.json
