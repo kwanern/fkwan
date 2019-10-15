@@ -108,7 +108,7 @@ class Segmentation(object):
             self.pos = self.pos.alias("result").join(
                 cohort.pf_spdf.alias("cohort"),
                 sqlf.col("result.Id") == sqlf.col("cohort.Id"),
-                how="inner",
+                how="inner"
             )
             .select("result.*")
 
