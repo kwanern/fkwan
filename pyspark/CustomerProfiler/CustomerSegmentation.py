@@ -110,7 +110,7 @@ class Segmentation(object):
                 sqlf.col("result.Id") == sqlf.col("cohort.Id"),
                 how="inner"
             )
-            .select("result.*")
+            .select(["result.*"])
 
         self.result = (
             self.pos.filter(sqlf.col(self.level).isin(self.products_id))
