@@ -155,12 +155,6 @@ class Segmentation(object):
             base = (
                 self.pos.filter(sqlf.col("ProductTypeDescription") == base_filter)
                 .withColumn("Product", sqlf.lit("Baseline"))
-                .withColumn(
-                    self.type + "s",
-                    sqlf.coalesce(
-                        sqlf.col("sr." + self.type), sqlf.col("nonsr." + self.type)
-                    ),
-                )
                 .groupBy(["Product", "Customer_Type", self.type + "s"])
                 .agg(
                     (
