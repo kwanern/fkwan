@@ -92,6 +92,12 @@ class Segmentation(object):
                 how="left",
             )
             .withColumn("Product", sqlf.lit(self.name))
+            .withColumn(
+                self.type + "s",
+                sqlf.coalesce(
+                    sqlf.col("sr." + self.type), sqlf.col("nonsr." + self.type)
+                ),
+            )
             .where(
                 sqlf.col("sr.GuidId").isNotNull()
                 | sqlf.col("nonsr.FirstPaymentToken").isNotNull()
@@ -107,13 +113,6 @@ class Segmentation(object):
 
         self.result = (
             self.pos.filter(sqlf.col(self.level).isin(self.products_id))
-            .withColumn("Product", sqlf.lit(self.name))
-            .withColumn(
-                self.type + "s",
-                sqlf.coalesce(
-                    sqlf.col("sr." + self.type), sqlf.col("nonsr." + self.type)
-                ),
-            )
             .groupBy(["Product", "Customer_Type", self.type + "s"])
             .agg(
                 (
