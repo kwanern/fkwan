@@ -70,7 +70,7 @@ class Segmentation(object):
         else:
             self.name = self.products_names
 
-        self.pos = (
+        pos = (
             self.pos.alias("pos")
             .filter(sqlf.col("BusinessDate").between(self.start_date, self.end_date))
             .join(
@@ -151,8 +151,41 @@ class Segmentation(object):
         )
 
         if base:
+            pos = (
+            self.pos.alias("pos")
+            .filter(sqlf.col("BusinessDate").between(self.start_date, self.end_date))
+            .join(
+                self.spark.table("ttran.taste_segments_v3").alias("sr"),
+                (
+                    (sqlf.col("pos.Id") == sqlf.col("sr.GuidId"))
+                    & (sqlf.col("sr.period") == self.period)
+                    & (sqlf.col("sr.end_date") == self.seg_date)
+                ),
+                how="left",
+            )
+            .join(
+                self.spark.table("ttran.taste_segments_non_sr_v3").alias("nonsr"),
+                (
+                    (sqlf.col("pos.Id") == sqlf.col("nonsr.FirstPaymentToken"))
+                    & (sqlf.col("nonsr.period") == self.period)
+                    & (sqlf.col("nonsr.end_date") == self.seg_date)
+                ),
+                how="left",
+            )
+            .withColumn("Product", sqlf.lit(self.name))
+            .withColumn(
+                self.type + "s",
+                sqlf.coalesce(
+                    sqlf.col("sr." + self.type), sqlf.col("nonsr." + self.type)
+                ),
+            )
+            .where(
+                sqlf.col("sr.GuidId").isNotNull()
+                | sqlf.col("nonsr.FirstPaymentToken").isNotNull()
+            )
+        )
             base = (
-                self.pos.filter(sqlf.col("ProductTypeDescription") == base_filter)
+                pos.filter(sqlf.col("ProductTypeDescription") == base_filter)
                 .withColumn("Product", sqlf.lit("Baseline"))
                 .groupBy(["Product", "Customer_Type", self.type + "s"])
                 .agg(
