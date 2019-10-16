@@ -70,7 +70,7 @@ class Segmentation(object):
         else:
             self.name = self.products_names
 
-        pos = (
+        self.pos = (
             self.pos.alias("pos")
             .filter(sqlf.col("BusinessDate").between(self.start_date, self.end_date))
             .join(
