@@ -70,7 +70,7 @@ class Segmentation(object):
         else:
             self.name = self.products_names
 
-        self.pos = (
+        pos = (
             self.pos.alias("pos")
             .filter(sqlf.col("BusinessDate").between(self.start_date, self.end_date))
             .join(
@@ -105,14 +105,14 @@ class Segmentation(object):
         )
 
         if cohort:
-            self.pos = self.pos.alias("result").join(
+            pos = pos.alias("result").join(
                 cohort.pf_spdf.alias("cohort"),
                 sqlf.col("result.Id") == sqlf.col("cohort.Id"),
                 how="inner"
             ).select(["result.*"])
 
-        self.result = (
-            self.pos.filter(sqlf.col(self.level).isin(self.products_id))
+        result = (
+            pos.filter(sqlf.col(self.level).isin(self.products_id))
             .groupBy(["Product", "Customer_Type", self.type + "s"])
             .agg(
                 (
@@ -127,8 +127,8 @@ class Segmentation(object):
             )
         )
 
-        self.result = (
-            self.result.withColumn(
+        result = (
+            result.withColumn(
                 "units_cust_proportion",
                 sqlf.col("units_cust")
                 / sqlf.sum("units_cust").over(Window.partitionBy("Customer_Type")),
@@ -152,7 +152,7 @@ class Segmentation(object):
 
         if base:
             base = (
-                self.pos.filter(sqlf.col("ProductTypeDescription") == base_filter)
+                pos.filter(sqlf.col("ProductTypeDescription") == base_filter)
                 .withColumn("Product", sqlf.lit("Baseline"))
                 .groupBy(["Product", "Customer_Type", self.type + "s"])
                 .agg(
@@ -192,9 +192,9 @@ class Segmentation(object):
                     ),
                 )
             )
-            return self.result.union(base)
+            return result.union(base)
 
-        return self.result
+        return result
 
     def beverage_segmentation(
         self, product, tp="bev_primary_segment", cohort=None, base=False, title=None
