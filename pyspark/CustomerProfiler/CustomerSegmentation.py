@@ -152,7 +152,7 @@ class Segmentation(object):
 
         if base:
             base = (
-                pos.filter(sqlf.col("ProductTypeDescription") == base_filter)
+                self.pos.filter(sqlf.col("ProductTypeDescription") == base_filter)
                 .withColumn("Product", sqlf.lit("Baseline"))
                 .groupBy(["Product", "Customer_Type", self.type + "s"])
                 .agg(
