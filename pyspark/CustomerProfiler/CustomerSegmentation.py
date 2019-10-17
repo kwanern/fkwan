@@ -104,15 +104,17 @@ class Segmentation(object):
             )
         )
 
+        pos1=pos
+
         if cohort:
-            pos = pos.alias("result").join(
+            pos1 = pos1.alias("result").join(
                 cohort.pf_spdf.alias("cohort"),
                 sqlf.col("result.Id") == sqlf.col("cohort.Id"),
                 how="inner"
             ).select(["result.*"])
 
         result = (
-            pos.filter(sqlf.col(self.level).isin(self.products_id))
+            pos1.filter(sqlf.col(self.level).isin(self.products_id))
             .groupBy(["Product", "Customer_Type", self.type + "s"])
             .agg(
                 (
@@ -151,39 +153,6 @@ class Segmentation(object):
         )
 
         if base:
-            pos = (
-            self.pos.alias("pos")
-            .filter(sqlf.col("BusinessDate").between(self.start_date, self.end_date))
-            .join(
-                self.spark.table("ttran.taste_segments_v3").alias("sr"),
-                (
-                    (sqlf.col("pos.Id") == sqlf.col("sr.GuidId"))
-                    & (sqlf.col("sr.period") == self.period)
-                    & (sqlf.col("sr.end_date") == self.seg_date)
-                ),
-                how="left",
-            )
-            .join(
-                self.spark.table("ttran.taste_segments_non_sr_v3").alias("nonsr"),
-                (
-                    (sqlf.col("pos.Id") == sqlf.col("nonsr.FirstPaymentToken"))
-                    & (sqlf.col("nonsr.period") == self.period)
-                    & (sqlf.col("nonsr.end_date") == self.seg_date)
-                ),
-                how="left",
-            )
-            .withColumn("Product", sqlf.lit(self.name))
-            .withColumn(
-                self.type + "s",
-                sqlf.coalesce(
-                    sqlf.col("sr." + self.type), sqlf.col("nonsr." + self.type)
-                ),
-            )
-            .where(
-                sqlf.col("sr.GuidId").isNotNull()
-                | sqlf.col("nonsr.FirstPaymentToken").isNotNull()
-            )
-        )
             base = (
                 pos.filter(sqlf.col("ProductTypeDescription") == base_filter)
                 .withColumn("Product", sqlf.lit("Baseline"))
