@@ -72,8 +72,6 @@ class Profiler(object):
                 "ContainerChildSequenceNumber",
                 "pos.GrossLineItemQty",
                 "pos.NetDiscountedSalesQty",
-                "pos.sugars",
-                "pos.calories",
                 "pos.LoyaltyMemberTenureDays"
              ]
         )
@@ -130,13 +128,6 @@ class Profiler(object):
             .alias("pos")
             .join(
                 spark
-                .table("ttran.product_nutrition")
-                .alias("nutrition"),
-                sqlf.col("pos.ItemNumber") == sqlf.col("nutrition.sku"),
-                how="left"
-            )
-            .join(
-                spark
                 .table("edap_pub_customer.customer360_behavior_restricted")
                 .alias("cust"),
                 sqlf.col("pos.Id") == sqlf.col("cust.AccountId"),
@@ -144,8 +135,6 @@ class Profiler(object):
             )
             .select([
                 "pos.*",
-                "nutrition.sugars",
-                "nutrition.calories",
                 "cust.LoyaltyMemberTenureDays"
             ])
         )
