@@ -160,7 +160,7 @@ class ltv_validation(object):
             result.alias("result")
             .join(
                 validation_spdf.alias("validation"),
-                sqlf.col("result.AccountId") == sqlf.col("validation.AccountId"),
+                sqlf.col("result."+self.cust_dict[self.customer]) == sqlf.col("validation."+self.cust_dict[self.customer]),
                 how="inner",
             )
             .withColumn(
@@ -189,7 +189,7 @@ class ltv_validation(object):
                 sqlf.max(sqlf.col("result." + monetary_col)).alias(
                     "MONETARY_PERCENTILE"
                 ),
-                sqlf.countDistinct(sqlf.col("result.AccountId")).alias("count"),
+                sqlf.countDistinct(sqlf.col("result."+self.cust_dict[self.customer])).alias("count"),
             )
             .orderBy("MONETARY_PERCENTILE")
         )
