@@ -151,7 +151,7 @@ class ltv(object):
             header="true",
         ).where(sqlf.col("COGSPercent") != "#DIV/0!")
 
-        self.trasanctions = (
+        self.transactions = (
             self.spark.table("fkwan.pos_line_item")
             .alias("a")
             .join(
