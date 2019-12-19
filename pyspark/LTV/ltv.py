@@ -147,7 +147,7 @@ class ltv(object):
         b_cogs = self.spark.read.csv(
             adls_base_path + environment + "/static_info/beverage_COGS_active.csv",
             header="true",
-        ).where(col("COGSPercent") != "#DIV/0!")
+        ).where(sqlf.col("COGSPercent") != "#DIV/0!")
 
         self.trasactions = (
             self.spark.table("fkwan.pos_line_item")
