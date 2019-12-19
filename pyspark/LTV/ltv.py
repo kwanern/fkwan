@@ -245,7 +245,7 @@ class ltv(object):
         )
 
         if self.customer == "SR":
-            self.trasactions = self.trasactions.filter(
+            self.transactions = self.transactions.filter(
                 sqlf.col(self.cust_dict[self.customer]).isNotNull()
                 & (sqlf.col("LoyaltyProgramName") == "MSR_USA")
             ).select(
@@ -281,7 +281,7 @@ class ltv(object):
                     ]
                 )
             )
-        return self.rfm_data(self.trasactions, self.RunStartDate, self.RunEndDate)
+        return self.rfm_data(self.transactions, self.RunStartDate, self.RunEndDate)
 
     def rfm_data(self, obs_tbl, start_date, end_date):
         if type(obs_tbl) == str:
