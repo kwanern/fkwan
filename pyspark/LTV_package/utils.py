@@ -150,25 +150,24 @@ class ltv_validation(ltv):
 
         return result
 
-        def mean_absolute_percentage_error(self):
-            result = (
-                self.validation
-                .withColumn(
-                    "CLV",
-                    sqlf.abs(sqlf.col("Actual_Monetary")-sqlf.col("result.PRED_CLV"))/sqlf.col("Actual_Monetary")
-                )
-                .withColumn(
-                    "Frequency",
-                    sqlf.abs(sqlf.col("Actual_Frequency")-sqlf.col("result.PRED_VISITS"))/sqlf.col("Actual_Frequency")
-                )
-                .groupBy()
-                .agg(
-                    sqlf.mean(sqlf.col("CLV")).alias("CLV_MAPE"),
-                    sqlf.mean(sqlf.col("Frequency")).alias("Frequency_MAPE")
-                )
+    def mean_absolute_percentage_error(self):
+        result = (
+            self.validation
+            .withColumn(
+                "CLV",
+                sqlf.abs(sqlf.col("Actual_Monetary")-sqlf.col("result.PRED_CLV"))/sqlf.col("Actual_Monetary")
             )
-
-            return result
+            .withColumn(
+                "Frequency",
+                sqlf.abs(sqlf.col("Actual_Frequency")-sqlf.col("result.PRED_VISITS"))/sqlf.col("Actual_Frequency")
+            )
+            .groupBy()
+            .agg(
+                sqlf.mean(sqlf.col("CLV")).alias("CLV_MAPE"),
+                sqlf.mean(sqlf.col("Frequency")).alias("Frequency_MAPE")
+            )
+        )
+        return result
 
 def monetary_percentile_plot(ls, mape_ls, labels, title, y_col="monetary_avg_diff", y_label="% Differences"):
     title = title
