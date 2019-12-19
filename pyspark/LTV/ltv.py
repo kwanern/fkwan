@@ -16,7 +16,7 @@ class ltv(object):
         self.customer = customer
         self.cust_dict = {"SR": "AccountId", "Non-SR": "AmperityId"}
 
-        def data_pull(self, customer, date, environment, adls_base_path):
+        def data_pull(self, date, environment, adls_base_path):
             """
             Parameters
             ----------
