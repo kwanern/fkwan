@@ -151,7 +151,7 @@ class ltv(object):
             header="true",
         ).where(sqlf.col("COGSPercent") != "#DIV/0!")
 
-        self.trasactions = (
+        self.trasanctions = (
             self.spark.table("fkwan.pos_line_item")
             .alias("a")
             .join(
@@ -265,8 +265,8 @@ class ltv(object):
                 )
                 .filter(sqlf.col("ExternalUserId2AccountId").isNull())
             )
-            self.trasactions = (
-                self.trasactions.alias("t")
+            self.transactions = (
+                self.transactions.alias("t")
                 .join(
                     identity.alias("id"),
                     sqlf.col("t.FirstPaymentToken") == sqlf.col("id.FirstPaymentToken"),
