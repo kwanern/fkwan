@@ -285,7 +285,7 @@ class ltv(object):
 
     def rfm_data(self, obs_tbl, start_date, end_date):
         if type(obs_tbl) == str:
-            bs_tbl = self.spark.table(obs_tbl)
+            obs_tbl = self.spark.table(obs_tbl)
         else:
             obs_tbl = obs_tbl
 
