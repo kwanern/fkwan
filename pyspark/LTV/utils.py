@@ -10,11 +10,11 @@ from .ltv import *
 
 
 class ltv_validation(ltv):
-    def __init__(self, obs_tbl, calibration_end, observation_end):
+    def __init__(self, spark, customer, obs_tbl, calibration_end, observation_end):
         self.calibration_end = calibration_end
         self.observation_end = observation_end
         self.obs_tbl = obs_tbl
-        super().__init__(self)
+        super().__init__(self, spark, customer)
 
     def clv_prediction(self, model, time=6.0, monetary_col="AVG_MONETARY_VALUE"):
         t = 52.08 / (12 / time)  # 365 days
