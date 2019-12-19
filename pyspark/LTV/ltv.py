@@ -1,6 +1,7 @@
 import pyspark.sql.functions as sqlf
 from datetime import date, datetime, timedelta
 
+
 class ltv(object):
     def __init__(self, spark, customer):
         """
@@ -12,7 +13,7 @@ class ltv(object):
             "SR" or "Non-SR".
         """
         self.spark = spark
-        self.customer = customer 
+        self.customer = customer
         self.cust_dict = {"SR": "AccountId", "Non-SR": "AmperityId"}
 
         def data_pull(self, customer, date, environment, adls_base_path):
@@ -36,12 +37,10 @@ class ltv(object):
             self.RunEndDate = str(date - timedelta(daweeksys=52))
 
             self.prod_hierarchy = (
-                self.spark
-                .table("edap_pub_productitem.enterprise_product_hierarchy")
+                self.spark.table("edap_pub_productitem.enterprise_product_hierarchy")
                 .alias("d1")
                 .join(
-                    self.spark
-                    .table(
+                    self.spark.table(
                         "edap_pub_productitem.legacy_item_profile_retail_auxiliary"
                     ).alias("d2"),
                     sql.col("d1.ItemId") == sqlf.col("d2.ItemNumber"),
@@ -85,7 +84,10 @@ class ltv(object):
                     .when(
                         (
                             (sqlf.col("ProductTypeDescription") == "Beverage")
-                            & (sqlf.col("ProductCategoryDescription") == "Ready-to-Drink")
+                            & (
+                                sqlf.col("ProductCategoryDescription")
+                                == "Ready-to-Drink"
+                            )
                         )
                         | (
                             (sqlf.col("ProductTypeDescription") == "Food")
@@ -146,8 +148,7 @@ class ltv(object):
             ).where(col("COGSPercent") != "#DIV/0!")
 
             self.trasactions = (
-                self.spark
-                .table("fkwan.pos_line_item")
+                self.spark.table("fkwan.pos_line_item")
                 .alias("a")
                 .join(
                     b_cogs.alias("b"),
@@ -244,13 +245,18 @@ class ltv(object):
                     sqlf.col(cust_dict[customer]).isNotNull()
                     & (sqlf.col("LoyaltyProgramName") == "MSR_USA")
                 ).select(
-                    [self.cust_dict[self.customer], "BusinessDate", "NETDISCOUNTEDSALESAMOUNT_REFINED"]
+                    [
+                        self.cust_dict[self.customer],
+                        "BusinessDate",
+                        "NETDISCOUNTEDSALESAMOUNT_REFINED",
+                    ]
                 )
             elif self.customer == "Non-SR":
                 identity = (
                     spark.table("cdl_prod_publish.nucleus_crosswalk")
                     .withColumn(
-                        "FirstPaymentToken", sqlf.explode("PaymentTokenWithScore.PaymentToken")
+                        "FirstPaymentToken",
+                        sqlf.explode("PaymentTokenWithScore.PaymentToken"),
                     )
                     .filter(sqlf.col("ExternalUserId2AccountId").isNull())
                 )
@@ -259,7 +265,8 @@ class ltv(object):
                     self.trasactions.alias("t")
                     .join(
                         identity.alias("id"),
-                        sqlf.col("t.FirstPaymentToken") == sqlf.col("id.FirstPaymentToken"),
+                        sqlf.col("t.FirstPaymentToken")
+                        == sqlf.col("id.FirstPaymentToken"),
                         how="inner",
                     )
                     .filter(sqlf.col(cust_dict[customer]).isNotNull())
@@ -279,10 +286,9 @@ class ltv(object):
                 obs_tbl = self.spark.table(obs_tbl)
             else:
                 obs_tbl = obs_tbl
-            
+
             drv = (
-                obs_tbl
-                .filter(sqlf.col("BusinessDate").between(start_date, end_date))
+                obs_tbl.filter(sqlf.col("BusinessDate").between(start_date, end_date))
                 .groupBy(self.cust_dict[self.customer])
                 .agg(
                     sqlf.countDistinct(sqlf.weekofyear(sqlf.col("BusinessDate"))).alias(
@@ -322,7 +328,9 @@ class ltv(object):
             rfm_actual_training = (
                 drv.withColumn(
                     "RECENCY",
-                    sqlf.when(sqlf.col("FREQUENCY") == 0, 0).otherwise(sqlf.col("RECENCY")),
+                    sqlf.when(sqlf.col("FREQUENCY") == 0, 0).otherwise(
+                        sqlf.col("RECENCY")
+                    ),
                 )
                 .withColumn(
                     "AVG_MONETARY_VALUE",
