@@ -16,7 +16,9 @@ class ltv(object):
         self.customer = customer
         self.cust_dict = {"SR": "AccountId", "Non-SR": "AmperityId"}
 
-    def data_pull(self, date, environment, adls_base_path, RunStartDate=None, RunEndDate=None):
+    def data_pull(
+        self, date, environment, adls_base_path, RunStartDate=None, RunEndDate=None
+    ):
         """
         Parameters
         ----------
@@ -244,7 +246,7 @@ class ltv(object):
 
         if self.customer == "SR":
             self.trasactions = self.trasactions.filter(
-                sqlf.col(cust_dict[customer]).isNotNull()
+                sqlf.col(self.cust_dict[self.customer]).isNotNull()
                 & (sqlf.col("LoyaltyProgramName") == "MSR_USA")
             ).select(
                 [
@@ -270,7 +272,7 @@ class ltv(object):
                     sqlf.col("t.FirstPaymentToken") == sqlf.col("id.FirstPaymentToken"),
                     how="inner",
                 )
-                .filter(sqlf.col(cust_dict[customer]).isNotNull())
+                .filter(sqlf.col(self.cust_dict[self.customer]).isNotNull())
                 .select(
                     [
                         self.cust_dict[self.customer],
