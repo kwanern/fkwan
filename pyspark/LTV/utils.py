@@ -100,6 +100,10 @@ class ltv_validation(ltv):
                 "Actual_Monetary",
                 sqlf.coalesce(sqlf.col("validation.MONETARY_VALUE"), sqlf.lit(0)),
             )
+            .withColumn(
+                "Actual_Frequency",
+                sqlf.coalesce(sqlf.col("validation.FREQUENCY"), sqlf.lit(0)),
+            )
             .withColumn("PRED_PERCENTILE", sqlf.ntile(100).over(w))
             .withColumn("AVG_MONETARY_PERCENTILE", sqlf.ntile(100).over(w2))
         )
@@ -118,7 +122,22 @@ class ltv_validation(ltv):
                         - sqlf.avg(sqlf.col("Actual_Monetary"))
                     )
                     / sqlf.avg(sqlf.col("Actual_Monetary"))
-                ).alias("diff"),
+                ).alias("monetary_avg_diff"),
+                (
+                    sqlf.avg(sqlf.col("result.PRED_CLV"))
+                    - sqlf.avg(sqlf.col("Actual_Monetary"))
+                ).alias("monetary_diff"),
+                (
+                    (
+                        sqlf.avg(sqlf.col("result.PRED_VISITS"))
+                        - sqlf.avg(sqlf.col("Actual_Frequency"))
+                    )
+                    / sqlf.avg(sqlf.col("Actual_Frequency"))
+                ).alias("frequency_avg_diff"),
+                (
+                    sqlf.avg(sqlf.col("result.PRED_VISITS"))
+                    - sqlf.avg(sqlf.col("Actual_Frequency"))
+                ).alias("frequency_diff"),
                 sqlf.max(sqlf.col("result." + monetary_col)).alias(
                     "MONETARY_PERCENTILE"
                 ),
@@ -132,10 +151,10 @@ class ltv_validation(ltv):
         return result
 
 
-def monetary_percentile_plot(ls, labels, title):
+def monetary_percentile_plot(ls, labels, title, y_col="monetary_avg_diff", y_label="% Differences"):
     title = title
     xlabel = "Average Monetary Percentile"
-    ylabel_1 = "% Differences"
+    ylabel_1 = y_label
 
     def millions(x, pos):
         "The two args are the value and tick position"
@@ -145,7 +164,11 @@ def monetary_percentile_plot(ls, labels, title):
     fig, ax1 = plt.subplots()
 
     for x in range(0, len(ls)):
-        ax1.plot(ls[x]["AVG_MONETARY_PERCENTILE"], ls[x]["diff"], label=labels[x])
+        ax1.plot(
+            ls[x]["AVG_MONETARY_PERCENTILE"],
+            ls[x][y_col],
+            label=labels[x],
+        )
 
     ax1.plot(ls[x]["AVG_MONETARY_PERCENTILE"], np.zeros(ls[x].shape[0]), ":r")
     ax1.set_ylabel(ylabel_1)
