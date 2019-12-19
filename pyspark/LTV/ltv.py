@@ -34,7 +34,7 @@ class ltv(object):
         """
         self.RunDate = str(date)
         self.RunStartDate = str(date - timedelta(days=1))
-        self.RunEndDate = str(date - timedelta(daweeksys=52))
+        self.RunEndDate = str(date - timedelta(weeks=52))
         self.prod_hierarchy = (
             self.spark.table("edap_pub_productitem.enterprise_product_hierarchy")
             .alias("d1")
