@@ -16,7 +16,7 @@ class ltv(object):
         self.customer = customer
         self.cust_dict = {"SR": "AccountId", "Non-SR": "AmperityId"}
 
-    def data_pull(self, date, environment, adls_base_path):
+    def data_pull(self, date, environment, adls_base_path, RunStartDate=None, RunEndDate=None):
         """
         Parameters
         ----------
@@ -33,8 +33,14 @@ class ltv(object):
             'Frequency', 'Recency', 'Age', 'Monetary_Value', 'Avg_Monetary_Value', 'Max_BusinessDate', 'Min_BusinessDate'
         """
         self.RunDate = str(date)
-        self.RunStartDate = str(date - timedelta(days=1))
-        self.RunEndDate = str(date - timedelta(weeks=52))
+        if RunStartDate:
+            self.RunStartDate = RunStartDate
+        else:
+            self.RunStartDate = str(date - timedelta(days=1))
+        if RunEndDate:
+            self.RunEndDate = RunEndDate
+        else:
+            self.RunEndDate = str(date - timedelta(weeks=52))
         self.prod_hierarchy = (
             self.spark.table("edap_pub_productitem.enterprise_product_hierarchy")
             .alias("d1")
@@ -42,7 +48,7 @@ class ltv(object):
                 self.spark.table(
                     "edap_pub_productitem.legacy_item_profile_retail_auxiliary"
                 ).alias("d2"),
-                sql.col("d1.ItemId") == sqlf.col("d2.ItemNumber"),
+                sqlf.col("d1.ItemId") == sqlf.col("d2.ItemNumber"),
                 how="left",
             )
             .withColumn(
