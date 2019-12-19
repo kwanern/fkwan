@@ -10,8 +10,7 @@ from .ltv import *
 
 
 class ltv_validation(ltv):
-    def __init__(self, customer, obs_tbl, calibration_end, observation_end):
-        self.customer = customer
+    def __init__(self, obs_tbl, calibration_end, observation_end):
         self.calibration_end = calibration_end
         self.observation_end = observation_end
         self.obs_tbl = obs_tbl
