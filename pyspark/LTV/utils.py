@@ -6,93 +6,25 @@ import numpy as np
 from pyspark.sql.window import Window
 from matplotlib.ticker import FuncFormatter
 from lifetimes import BetaGeoFitter, GammaGammaFitter, ModifiedBetaGeoFitter
+from .ltv import *
 
 
-class ltv_validation(object):
-    def __init__(self, spark, customer, obs_tbl, calibration_end, observation_end):
-        self.spark = spark
+class ltv_validation(ltv):
+    def __init__(self, customer, obs_tbl, calibration_end, observation_end):
         self.customer = customer
         self.calibration_end = calibration_end
         self.observation_end = observation_end
         self.obs_tbl = obs_tbl
-        self.cust_dict = {"SR": "AccountId", "Non-SR": "AmperityId"}
-
-    def validation_test_split(self, start_date, end_date):
-        drv = (
-            self.spark.table(self.obs_tbl)
-            .filter(sqlf.col("BusinessDate").between(start_date, end_date))
-            .groupBy(self.cust_dict[self.customer])
-            .agg(
-                sqlf.countDistinct(sqlf.weekofyear(sqlf.col("BusinessDate"))).alias(
-                    "FREQUENCY"
-                ),
-                (
-                    sqlf.round(
-                        sqlf.datediff(
-                            sqlf.max(sqlf.col("BusinessDate")),
-                            sqlf.min(sqlf.col("BusinessDate")),
-                        )
-                        / 7,
-                        2,
-                    )
-                    * sqlf.lit(1.0)
-                ).alias("RECENCY"),
-                (
-                    sqlf.round(
-                        sqlf.datediff(
-                            sqlf.to_date(sqlf.lit(end_date)),
-                            sqlf.min(sqlf.col("BusinessDate")),
-                        )
-                        / 7,
-                        2,
-                    )
-                    * sqlf.lit(1.0)
-                ).alias("AGE"),
-                sqlf.round(
-                    sqlf.sum(sqlf.col("NETDISCOUNTEDSALESAMOUNT_REFINED")), 2
-                ).alias("MONETARY_VALUE"),
-                sqlf.max(sqlf.col("BusinessDate")).alias("MAX_BUSINESSDATE"),
-                sqlf.min(sqlf.col("BusinessDate")).alias("MIN_BUSINESSDATE"),
-            )
-            .where(sqlf.col("MONETARY_VALUE") > 0)
-        )
-
-        rfm_actual_training = (
-            drv.withColumn(
-                "RECENCY",
-                sqlf.when(sqlf.col("FREQUENCY") == 0, 0).otherwise(sqlf.col("RECENCY")),
-            )
-            .withColumn(
-                "AVG_MONETARY_VALUE",
-                sqlf.coalesce(
-                    sqlf.col("MONETARY_VALUE") / sqlf.col("FREQUENCY"), sqlf.lit(0)
-                ),
-            )
-            .select(
-                [
-                    self.cust_dict[self.customer],
-                    "FREQUENCY",
-                    "RECENCY",
-                    "AGE",
-                    "MONETARY_VALUE",
-                    "AVG_MONETARY_VALUE",
-                    "MAX_BUSINESSDATE",
-                    "MIN_BUSINESSDATE",
-                ]
-            )
-        )
-
-        return rfm_actual_training
 
     def clv_prediction(self, model, time=6.0, monetary_col="AVG_MONETARY_VALUE"):
         t = 52.08 / (12 / time)  # 365 days
 
-        pd_actual_training = self.validation_test_split(
-            start_date="2010-01-01", end_date=self.calibration_end
+        pd_actual_training = self.rfm_data(
+            self.obs_tbl, start_date="2010-01-01", end_date=self.calibration_end
         ).toPandas()
 
-        validation_spdf = self.validation_test_split(
-            start_date=self.calibration_end, end_date=self.observation_end
+        validation_spdf = self.rfm_data(
+            self.obs_tbl, start_date=self.calibration_end, end_date=self.observation_end
         )
 
         for col in ["RECENCY", "AGE", monetary_col]:
