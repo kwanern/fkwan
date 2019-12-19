@@ -154,17 +154,17 @@ class ltv_validation(ltv):
         result = (
             self.validation
             .withColumn(
-                "CLV",
+                "CLV_MAPE",
                 sqlf.abs(sqlf.col("Actual_Monetary")-sqlf.col("result.PRED_CLV"))/sqlf.col("Actual_Monetary")
             )
             .withColumn(
-                "Frequency",
+                "Frequency_MAPE",
                 sqlf.abs(sqlf.col("Actual_Frequency")-sqlf.col("result.PRED_VISITS"))/sqlf.col("Actual_Frequency")
             )
             .groupBy()
             .agg(
-                sqlf.mean(sqlf.col("CLV")).alias("CLV_MAPE"),
-                sqlf.mean(sqlf.col("Frequency")).alias("Frequency_MAPE")
+                sqlf.mean(sqlf.col("CLV_MAPE")).alias("CLV_MAPE"),
+                sqlf.mean(sqlf.col("Frequency_MAPE")).alias("Frequency_MAPE")
             )
         )
         return result
