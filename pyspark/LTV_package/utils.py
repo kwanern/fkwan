@@ -187,7 +187,7 @@ def monetary_percentile_plot(ls, mape_ls, labels, title, y_col="monetary_avg_dif
             ls[x][y_col],
             label=labels[x],
         )
-        text="MAPE for {0} = {1}".format(labels[x], mape_ls[x])
+        txt="MAPE for {0} = {1}".format(labels[x], mape_ls[x])
         plt.figtext(0.5, 0.01*(x), txt, wrap=True, horizontalalignment='left', fontsize=10)
 
     ax1.plot(ls[x]["AVG_MONETARY_PERCENTILE"], np.zeros(ls[x].shape[0]), ":r")
