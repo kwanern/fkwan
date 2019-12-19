@@ -88,7 +88,7 @@ class ltv_validation(ltv):
         w = Window.partitionBy().orderBy(sqlf.col("PRED_CLV"))
         w2 = Window.partitionBy().orderBy(sqlf.col("result." + monetary_col))
 
-        validation = (
+        self.validation = (
             result.alias("result")
             .join(
                 validation_spdf.alias("validation"),
@@ -109,7 +109,7 @@ class ltv_validation(ltv):
         )
 
         result = (
-            validation.groupBy("AVG_MONETARY_PERCENTILE")
+            self.validation.groupBy("AVG_MONETARY_PERCENTILE")
             .agg(
                 sqlf.avg(sqlf.col("result.PRED_CLV")).alias("AVG_PRED_CLV"),
                 sqlf.avg(sqlf.col("result.COND_EXP_AVG_PROFT")).alias(
@@ -150,8 +150,27 @@ class ltv_validation(ltv):
 
         return result
 
+        def mean_absolute_percentage_error(self):
+            result = (
+                self.validation
+                .withColumn(
+                    "CLV",
+                    sqlf.abs(sqlf.col("Actual_Monetary")-sqlf.col("result.PRED_CLV"))/sqlf.col("Actual_Monetary")
+                )
+                .withColumn(
+                    "Frequency",
+                    sqlf.abs(sqlf.col("Actual_Frequency")-sqlf.col("result.PRED_VISITS"))/sqlf.col("Actual_Frequency")
+                )
+                .groupBy()
+                .agg(
+                    sqlf.mean(sqlf.col("CLV")).alias("CLV_MAPE"),
+                    sqlf.mean(sqlf.col("Frequency")).alias("Frequency_MAPE")
+                )
+            )
 
-def monetary_percentile_plot(ls, labels, title, y_col="monetary_avg_diff", y_label="% Differences"):
+            return result
+
+def monetary_percentile_plot(ls, mape_ls, labels, title, y_col="monetary_avg_diff", y_label="% Differences"):
     title = title
     xlabel = "Average Monetary Percentile"
     ylabel_1 = y_label
@@ -169,6 +188,8 @@ def monetary_percentile_plot(ls, labels, title, y_col="monetary_avg_diff", y_lab
             ls[x][y_col],
             label=labels[x],
         )
+        text="MAPE for {0} = {1}".format(labels[x], mape_ls[x])
+        plt.figtext(0.5, 0.01*(x), txt, wrap=True, horizontalalignment='left', fontsize=10)
 
     ax1.plot(ls[x]["AVG_MONETARY_PERCENTILE"], np.zeros(ls[x].shape[0]), ":r")
     ax1.set_ylabel(ylabel_1)
@@ -176,4 +197,4 @@ def monetary_percentile_plot(ls, labels, title, y_col="monetary_avg_diff", y_lab
     ax1.legend()
     plt.title(title)
 
-    return fig
+    return fig, ax1
