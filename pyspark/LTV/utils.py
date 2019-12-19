@@ -14,6 +14,7 @@ class ltv_validation(ltv):
         self.calibration_end = calibration_end
         self.observation_end = observation_end
         self.obs_tbl = obs_tbl
+        super().__init__(self)
 
     def clv_prediction(self, model, time=6.0, monetary_col="AVG_MONETARY_VALUE"):
         t = 52.08 / (12 / time)  # 365 days
