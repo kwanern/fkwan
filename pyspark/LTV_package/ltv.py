@@ -38,11 +38,11 @@ class ltv(object):
         if RunStartDate:
             self.RunStartDate = RunStartDate
         else:
-            self.RunStartDate = str(date - timedelta(days=1))
+            self.RunStartDate = str(date - timedelta(weeks=52))
         if RunEndDate:
             self.RunEndDate = RunEndDate
         else:
-            self.RunEndDate = str(date - timedelta(weeks=52))
+            self.RunEndDate = str(date - timedelta(days=1))
         prod_hierarchy = (
             self.spark.table("edap_pub_productitem.enterprise_product_hierarchy")
             .alias("d1")
@@ -281,7 +281,7 @@ class ltv(object):
                     ]
                 )
             )
-        return self.rfm_data(self.transactions, self.RunStartDate, self.RunEndDate)
+        return self.transactions
 
     def rfm_data(self, obs_tbl, start_date, end_date):
         if type(obs_tbl) == str:
