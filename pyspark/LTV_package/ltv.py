@@ -281,7 +281,7 @@ class ltv(object):
                     ]
                 )
             )
-        return self.transaction
+        return self.transactions
 
     def rfm_data(self, obs_tbl, start_date, end_date):
         if type(obs_tbl) == str:
