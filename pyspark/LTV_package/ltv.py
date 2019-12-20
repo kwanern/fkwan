@@ -258,7 +258,7 @@ class ltv(object):
 
         elif self.customer == "Non-SR":
             identity = (
-                spark.table("cdl_prod_publish.nucleus_crosswalk")
+                self.spark.table("cdl_prod_publish.nucleus_crosswalk")
                 .withColumn(
                     "FirstPaymentToken",
                     sqlf.explode("PaymentTokenWithScore.PaymentToken"),
