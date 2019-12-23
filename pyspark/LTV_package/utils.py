@@ -214,7 +214,7 @@ def plot_calibration_purchases_vs_holdout_purchases(ls, title="Actual Purchases 
         label="Actual",
     )
 
-    plt.title("Actual Purchases in Holdout Period vs Predicted Purchases")
+    plt.title(title)
     plt.xlabel("Purchases in calibration period")
     plt.ylabel("Average of Purchases in Holdout Period")
     plt.legend()
