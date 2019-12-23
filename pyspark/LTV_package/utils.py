@@ -14,20 +14,16 @@ class ltv_validation(ltv):
         self.calibration_end = calibration_end
         self.observation_end = observation_end
         self.obs_tbl = obs_tbl
-        self.bgf_actual = None
-        self.pd_actual_training = None
-        self.validation_spdf = None
-        self.t = None
         super().__init__(spark, customer)
 
-    def frequency_prediction(self, model, time=6.0):
-        self.t = 52.08 / (12 / time)  # 365 days
+    def clv_prediction(self, model, time=6.0, monetary_col="AVG_MONETARY_VALUE"):
+        t = 52.08 / (12 / time)  # 365 days
 
-        self.pd_actual_training = self.rfm_data(
+        pd_actual_training = self.rfm_data(
             self.obs_tbl, start_date="2010-01-01", end_date=self.calibration_end
         ).toPandas()
 
-        self.validation_spdf = self.rfm_data(
+        validation_spdf = self.rfm_data(
             self.obs_tbl, start_date=self.calibration_end, end_date=self.observation_end
         )
 
@@ -35,32 +31,31 @@ class ltv_validation(ltv):
             pd_actual_training[col] = pd_actual_training[col].astype("float")
 
         # Fitting beta geo fitter and predicting the frequency and alive probability
-        self.bgf_actual = model
-        self.bgf_actual.fit(
-            self.pd_actual_training["FREQUENCY"],
-            self.pd_actual_training["RECENCY"],
-            self.pd_actual_training["AGE"],
+        bgf_actual = model
+        bgf_actual.fit(
+            pd_actual_training["FREQUENCY"],
+            pd_actual_training["RECENCY"],
+            pd_actual_training["AGE"],
         )
 
-        self.pd_actual_training[
+        pd_actual_training[
             "PRED_VISITS"
-        ] = self.bgf_actual.conditional_expected_number_of_purchases_up_to_time(
+        ] = bgf_actual.conditional_expected_number_of_purchases_up_to_time(
             t,
-            self.pd_actual_training["FREQUENCY"],
-            self.pd_actual_training["RECENCY"],
-            self.pd_actual_training["AGE"],
+            pd_actual_training["FREQUENCY"],
+            pd_actual_training["RECENCY"],
+            pd_actual_training["AGE"],
         )
 
-        self.pd_actual_training["PROB_ALIVE"] = self.bgf_actual.conditional_probability_alive(
-            self.pd_actual_training["FREQUENCY"],
-            self.pd_actual_training["RECENCY"],
-            self.pd_actual_training["AGE"],
+        pd_actual_training["PROB_ALIVE"] = bgf_actual.conditional_probability_alive(
+            pd_actual_training["FREQUENCY"],
+            pd_actual_training["RECENCY"],
+            pd_actual_training["AGE"],
         )
 
-    def clv_prediction(self, model, time=6.0, monetary_col="AVG_MONETARY_VALUE"):
         # Fitting gamma gamma fitter and predicting the ltv score
-        refined_pd_actual_training = self.pd_actual_training[
-            self.pd_actual_training["FREQUENCY"] > 1
+        refined_pd_actual_training = pd_actual_training[
+            pd_actual_training["FREQUENCY"] > 1
         ]
 
         ggf_actual = GammaGammaFitter(
@@ -71,24 +66,24 @@ class ltv_validation(ltv):
             refined_pd_actual_training[monetary_col],
         )
 
-        self.pd_actual_training["PRED_CLV"] = ggf_actual.customer_lifetime_value(
-            self.bgf_actual,
-            self.pd_actual_training["FREQUENCY"],
-            self.pd_actual_training["RECENCY"],
-            self.pd_actual_training["AGE"],
-            self.pd_actual_training[monetary_col],
+        pd_actual_training["PRED_CLV"] = ggf_actual.customer_lifetime_value(
+            bgf_actual,
+            pd_actual_training["FREQUENCY"],
+            pd_actual_training["RECENCY"],
+            pd_actual_training["AGE"],
+            pd_actual_training[monetary_col],
             freq="W",
             time=time,
             discount_rate=0.0056,
         )
 
-        self.pd_actual_training[
+        pd_actual_training[
             "COND_EXP_AVG_PROFT"
         ] = ggf_actual.conditional_expected_average_profit(
-            self.pd_actual_training["FREQUENCY"], self.pd_actual_training[monetary_col]
+            pd_actual_training["FREQUENCY"], pd_actual_training[monetary_col]
         )
 
-        result = self.spark.createDataFrame(self.pd_actual_training)
+        result = self.spark.createDataFrame(pd_actual_training)
 
         w = Window.partitionBy().orderBy(sqlf.col("PRED_CLV"))
         w2 = Window.partitionBy().orderBy(sqlf.col("result." + monetary_col))
@@ -96,7 +91,7 @@ class ltv_validation(ltv):
         self.validation = (
             result.alias("result")
             .join(
-                self.validation_spdf.alias("validation"),
+                validation_spdf.alias("validation"),
                 sqlf.col("result." + self.cust_dict[self.customer])
                 == sqlf.col("validation." + self.cust_dict[self.customer]),
                 how="inner",
