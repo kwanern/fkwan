@@ -202,6 +202,7 @@ def monetary_percentile_plot(ls, mape_ls, labels, title, y_col="monetary_avg_dif
 
 
 def plot_calibration_purchases_vs_holdout_purchases(ls):
+    fig, ax1 = plt.subplots()
     ax1.plot(
         ls[x]["FREQUENCY"],
         ls[x]["PRED_VISITS"],
@@ -220,4 +221,4 @@ def plot_calibration_purchases_vs_holdout_purchases(ls):
     plt.ylabel("Average of Purchases in Holdout Period")
     plt.legend()
 
-    return ax
+    return ax1
