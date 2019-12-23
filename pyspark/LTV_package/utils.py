@@ -14,6 +14,7 @@ class ltv_validation(ltv):
         self.calibration_end = calibration_end
         self.observation_end = observation_end
         self.obs_tbl = obs_tbl
+        self.result = None
         super().__init__(spark, customer)
 
     def clv_prediction(self, model, time=6.0, monetary_col="AVG_MONETARY_VALUE"):
@@ -108,8 +109,9 @@ class ltv_validation(ltv):
             .withColumn("AVG_MONETARY_PERCENTILE", sqlf.ntile(100).over(w2))
         )
 
+    def collect(self, groupByName="AVG_MONETARY_PERCENTILE"):
         result = (
-            self.validation.groupBy("AVG_MONETARY_PERCENTILE")
+            self.validation.groupBy(groupByName)
             .agg(
                 sqlf.avg(sqlf.col("result.PRED_CLV")).alias("AVG_PRED_CLV"),
                 sqlf.avg(sqlf.col("result.COND_EXP_AVG_PROFT")).alias(
@@ -145,7 +147,7 @@ class ltv_validation(ltv):
                     sqlf.col("result." + self.cust_dict[self.customer])
                 ).alias("count"),
             )
-            .orderBy("MONETARY_PERCENTILE")
+            .orderBy(groupByName)
         )
 
         return result
@@ -197,3 +199,35 @@ def monetary_percentile_plot(ls, mape_ls, labels, title, y_col="monetary_avg_dif
     plt.title(title)
 
     return fig, ax1
+
+
+    def plot_calibration_purchases_vs_holdout_purchases(ls, labels):
+    x_labels = {
+        "frequency_cal": "Purchases in calibration period",
+        "recency_cal": "Age of customer at last purchase",
+        "T_cal": "Age of customer at the end of calibration period",
+        "time_since_last_purchase": "Time since user made last purchase",
+    }
+    summary = calibration_holdout_matrix.copy()
+    duration_holdout = summary.iloc[0]["duration_holdout"]
+
+    summary["model_predictions"] = model.conditional_expected_number_of_purchases_up_to_time(
+            duration_holdout, summary["frequency_cal"], summary["recency_cal"], summary["T_cal"])
+
+    if kind == "time_since_last_purchase":
+        summary["time_since_last_purchase"] = summary["T_cal"] - summary["recency_cal"]
+        ax = (
+            summary.groupby(["time_since_last_purchase"])[["frequency_holdout", "model_predictions"]]
+            .mean()
+            .iloc[:n]
+            .plot(**kwargs)
+        )
+    else:
+        ax = summary.groupby(kind)[["frequency_holdout", "model_predictions"]].mean().iloc[:n].plot(**kwargs)
+
+    plt.title("Actual Purchases in Holdout Period vs Predicted Purchases")
+    plt.xlabel(x_labels[kind])
+    plt.ylabel("Average of Purchases in Holdout Period")
+    plt.legend()
+
+    return ax
