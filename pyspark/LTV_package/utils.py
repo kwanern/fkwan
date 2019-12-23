@@ -109,7 +109,7 @@ class ltv_validation(ltv):
             .withColumn("AVG_MONETARY_PERCENTILE", sqlf.ntile(100).over(w2))
         )
 
-        return ltv_validation(self, self.customer, self.obs_tbl, self.calibration_end, self.observation_end)
+        return self
 
     def collect(self, groupByName="AVG_MONETARY_PERCENTILE"):
         result = (
