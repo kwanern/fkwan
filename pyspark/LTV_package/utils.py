@@ -109,48 +109,49 @@ class ltv_validation(ltv):
             .withColumn("AVG_MONETARY_PERCENTILE", sqlf.ntile(100).over(w2))
         )
 
-        def collect(self, groupByName="AVG_MONETARY_PERCENTILE"):
-            result = (
-                self.validation.groupBy(groupByName)
-                .agg(
-                    sqlf.avg(sqlf.col("result.PRED_CLV")).alias("AVG_PRED_CLV"),
-                    sqlf.avg(sqlf.col("result.COND_EXP_AVG_PROFT")).alias(
-                        "AVG_COND_EXP_AVG_PROFT"
-                    ),
-                    sqlf.avg(sqlf.col("Actual_Monetary")).alias("AVG_Actual_Monetary"),
-                    (
-                        (
-                            sqlf.avg(sqlf.col("result.PRED_CLV"))
-                            - sqlf.avg(sqlf.col("Actual_Monetary"))
-                        )
-                        / sqlf.avg(sqlf.col("Actual_Monetary"))
-                    ).alias("monetary_avg_diff"),
+        return ltv_validation(self)
+
+    def collect(self, groupByName="AVG_MONETARY_PERCENTILE"):
+        result = (
+            self.validation.groupBy(groupByName)
+            .agg(
+                sqlf.avg(sqlf.col("result.PRED_CLV")).alias("AVG_PRED_CLV"),
+                sqlf.avg(sqlf.col("result.COND_EXP_AVG_PROFT")).alias(
+                    "AVG_COND_EXP_AVG_PROFT"
+                ),
+                sqlf.avg(sqlf.col("Actual_Monetary")).alias("AVG_Actual_Monetary"),
+                (
                     (
                         sqlf.avg(sqlf.col("result.PRED_CLV"))
                         - sqlf.avg(sqlf.col("Actual_Monetary"))
-                    ).alias("monetary_diff"),
-                    (
-                        (
-                            sqlf.avg(sqlf.col("result.PRED_VISITS"))
-                            - sqlf.avg(sqlf.col("Actual_Frequency"))
-                        )
-                        / sqlf.avg(sqlf.col("Actual_Frequency"))
-                    ).alias("frequency_avg_diff"),
+                    )
+                    / sqlf.avg(sqlf.col("Actual_Monetary"))
+                ).alias("monetary_avg_diff"),
+                (
+                    sqlf.avg(sqlf.col("result.PRED_CLV"))
+                    - sqlf.avg(sqlf.col("Actual_Monetary"))
+                ).alias("monetary_diff"),
+                (
                     (
                         sqlf.avg(sqlf.col("result.PRED_VISITS"))
                         - sqlf.avg(sqlf.col("Actual_Frequency"))
-                    ).alias("frequency_diff"),
-                    sqlf.max(sqlf.col("result." + monetary_col)).alias(
-                        "MONETARY_PERCENTILE"
-                    ),
-                    sqlf.countDistinct(
-                        sqlf.col("result." + self.cust_dict[self.customer])
-                    ).alias("count"),
-                )
-                .orderBy(groupByName)
+                    )
+                    / sqlf.avg(sqlf.col("Actual_Frequency"))
+                ).alias("frequency_avg_diff"),
+                (
+                    sqlf.avg(sqlf.col("result.PRED_VISITS"))
+                    - sqlf.avg(sqlf.col("Actual_Frequency"))
+                ).alias("frequency_diff"),
+                sqlf.max(sqlf.col("result." + monetary_col)).alias(
+                    "MONETARY_PERCENTILE"
+                ),
+                sqlf.countDistinct(
+                    sqlf.col("result." + self.cust_dict[self.customer])
+                ).alias("count"),
             )
-
-            return result
+            .orderBy(groupByName)
+        )
+        return result
 
     def mean_absolute_percentage_error(self):
         result = (
