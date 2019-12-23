@@ -15,9 +15,11 @@ class ltv_validation(ltv):
         self.observation_end = observation_end
         self.obs_tbl = obs_tbl
         self.result = None
+        self.monetary_col = None
         super().__init__(spark, customer)
 
     def clv_prediction(self, model, time=6.0, monetary_col="AVG_MONETARY_VALUE"):
+        self.monetary_col = monetary_col
         t = 52.08 / (12 / time)  # 365 days
 
         pd_actual_training = self.rfm_data(
@@ -28,7 +30,7 @@ class ltv_validation(ltv):
             self.obs_tbl, start_date=self.calibration_end, end_date=self.observation_end
         )
 
-        for col in ["RECENCY", "AGE", monetary_col]:
+        for col in ["RECENCY", "AGE", self.monetary_col]:
             pd_actual_training[col] = pd_actual_training[col].astype("float")
 
         # Fitting beta geo fitter and predicting the frequency and alive probability
@@ -64,7 +66,7 @@ class ltv_validation(ltv):
         )  # Convergence Errors at .0001
         ggf_actual.fit(
             refined_pd_actual_training["FREQUENCY"],
-            refined_pd_actual_training[monetary_col],
+            refined_pd_actual_training[self.monetary_col],
         )
 
         pd_actual_training["PRED_CLV"] = ggf_actual.customer_lifetime_value(
@@ -72,7 +74,7 @@ class ltv_validation(ltv):
             pd_actual_training["FREQUENCY"],
             pd_actual_training["RECENCY"],
             pd_actual_training["AGE"],
-            pd_actual_training[monetary_col],
+            pd_actual_training[self.monetary_col],
             freq="W",
             time=time,
             discount_rate=0.0056,
@@ -81,13 +83,13 @@ class ltv_validation(ltv):
         pd_actual_training[
             "COND_EXP_AVG_PROFT"
         ] = ggf_actual.conditional_expected_average_profit(
-            pd_actual_training["FREQUENCY"], pd_actual_training[monetary_col]
+            pd_actual_training["FREQUENCY"], pd_actual_training[self.monetary_col]
         )
 
         result = self.spark.createDataFrame(pd_actual_training)
 
         w = Window.partitionBy().orderBy(sqlf.col("PRED_CLV"))
-        w2 = Window.partitionBy().orderBy(sqlf.col("result." + monetary_col))
+        w2 = Window.partitionBy().orderBy(sqlf.col("result." + self.monetary_col))
 
         self.validation = (
             result.alias("result")
@@ -142,7 +144,7 @@ class ltv_validation(ltv):
                     sqlf.avg(sqlf.col("result.PRED_VISITS"))
                     - sqlf.avg(sqlf.col("Actual_Frequency"))
                 ).alias("frequency_diff"),
-                sqlf.max(sqlf.col("result." + monetary_col)).alias(
+                sqlf.max(sqlf.col("result." + self.monetary_col)).alias(
                     "MONETARY_PERCENTILE"
                 ),
                 sqlf.countDistinct(
