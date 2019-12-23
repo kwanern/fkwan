@@ -201,32 +201,22 @@ def monetary_percentile_plot(ls, mape_ls, labels, title, y_col="monetary_avg_dif
     return fig, ax1
 
 
-    def plot_calibration_purchases_vs_holdout_purchases(ls, labels):
-    x_labels = {
-        "frequency_cal": "Purchases in calibration period",
-        "recency_cal": "Age of customer at last purchase",
-        "T_cal": "Age of customer at the end of calibration period",
-        "time_since_last_purchase": "Time since user made last purchase",
-    }
-    summary = calibration_holdout_matrix.copy()
-    duration_holdout = summary.iloc[0]["duration_holdout"]
-
-    summary["model_predictions"] = model.conditional_expected_number_of_purchases_up_to_time(
-            duration_holdout, summary["frequency_cal"], summary["recency_cal"], summary["T_cal"])
-
-    if kind == "time_since_last_purchase":
-        summary["time_since_last_purchase"] = summary["T_cal"] - summary["recency_cal"]
-        ax = (
-            summary.groupby(["time_since_last_purchase"])[["frequency_holdout", "model_predictions"]]
-            .mean()
-            .iloc[:n]
-            .plot(**kwargs)
-        )
-    else:
-        ax = summary.groupby(kind)[["frequency_holdout", "model_predictions"]].mean().iloc[:n].plot(**kwargs)
+def plot_calibration_purchases_vs_holdout_purchases(ls):
+    ax1.plot(
+        ls[x]["FREQUENCY"],
+        ls[x]["PRED_VISITS"],
+        label="Model",
+    )
+    ax1.plot(
+        ls[x]["FREQUENCY"],
+        ls[x]["Actual_Frequency"],
+        label="Actual",
+    )
+    txt="MAPE for {0} = {1}".format(labels[x], mape_ls[x])
+    plt.figtext(0.5, 0.01*(x), txt, wrap=True, horizontalalignment='left', fontsize=10)
 
     plt.title("Actual Purchases in Holdout Period vs Predicted Purchases")
-    plt.xlabel(x_labels[kind])
+    plt.xlabel("Purchases in calibration period")
     plt.ylabel("Average of Purchases in Holdout Period")
     plt.legend()
 
