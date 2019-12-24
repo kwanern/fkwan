@@ -176,14 +176,14 @@ class ltv_validation(ltv):
         )
         return result
 
+def millions(x, pos):
+    "The two args are the value and tick position"
+    return "%1.1fM" % (x * 1e-6)
+
 def monetary_percentile_plot(ls, mape_ls, labels, title, y_col="monetary_avg_diff", y_label="% Differences"):
     title = title
     xlabel = "Average Monetary Percentile"
     ylabel_1 = y_label
-
-    def millions(x, pos):
-        "The two args are the value and tick position"
-        return "%1.1fM" % (x * 1e-6)
 
     formatter = FuncFormatter(millions)
     fig, ax1 = plt.subplots()
@@ -206,8 +206,15 @@ def monetary_percentile_plot(ls, mape_ls, labels, title, y_col="monetary_avg_dif
     return fig, ax1
 
 
-def plot_calibration_purchases_vs_holdout_purchases(ls, title="Actual Purchases in Holdout Period vs Predicted Purchases"):
+def plot_calibration_purchases_vs_holdout_purchases(
+    ls, 
+    title="Actual Purchases in Holdout Period vs Predicted Purchases",
+    max_freq=35):
+    formatter = FuncFormatter(millions)
+    pct = ls[ls["FREQUENCY"]<=max_freq]["count"].sum()/ls["count"].sum()
+
     fig, ax1 = plt.subplots()
+    ls = ls[ls["FREQUENCY"]<=max_freq]
     ax1.plot(
         ls["FREQUENCY"],
         ls["AVG_PRED_VISITS"],
@@ -219,7 +226,9 @@ def plot_calibration_purchases_vs_holdout_purchases(ls, title="Actual Purchases 
         label="Actual",
     )
 
-    plt.title(title)
+    txt="Unique Id counts for Max Frequency <= {0}: {1:.2f}%".format(max_freq, pct*100)
+    plt.suptitle(title)
+    ax1.set_title(txt, fontdict={'fontsize': 8, 'fontweight': 'medium'})
     plt.xlabel("Purchases in calibration period")
     plt.ylabel("Average of Purchases in Holdout Period")
     plt.legend()
