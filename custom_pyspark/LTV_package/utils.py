@@ -10,10 +10,11 @@ from .ltv import *
 
 
 class ltv_validation(ltv):
-    def __init__(self, spark, customer, obs_tbl, calibration_end, observation_end):
+    def __init__(self, spark, customer, obs_tbl, calibration_end, observation_end, penalizer_coef=0.001):
         self.calibration_end = calibration_end
         self.observation_end = observation_end
         self.obs_tbl = obs_tbl
+        self.penalizer_coef = penalizer_coef
         self.result = None
         self.monetary_col = None
         super().__init__(spark, customer)
@@ -62,7 +63,7 @@ class ltv_validation(ltv):
         ]
 
         ggf_actual = GammaGammaFitter(
-            penalizer_coef=0.0001
+            penalizer_coef=self.penalizer_coef
         )  # Convergence Errors at .0001
         ggf_actual.fit(
             refined_pd_actual_training["FREQUENCY"],
