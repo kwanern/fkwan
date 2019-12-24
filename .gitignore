@@ -6,11 +6,12 @@
 /.vs/slnx.sqlite
 /.vs/VSWorkspaceState.json
 custom_pyspark/__pycache__/__init__.cpython-35.pyc
-custom_custom_pyspark/__pycache__/import_files.cpython-35.pyc
+custom_custom_pyspark/__pycache__
 custom_pyspark/LTV/main.py
 custom_pyspark/LTV/push_pull.py
 custom_pyspark/LTV/validation.py
 custom_pyspark/LTV_package/__pycache__/utils.cpython-35.pyc
 __pycache__/__init__.cpython-35.pyc
-custom_pyspark/__pycache__/udf.cpython-35.pyc
+custom_pyspark/.git
 .vscode/settings.json
+custom_pyspark/.gitignore
