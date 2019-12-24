@@ -1,5 +1,6 @@
 from ..libraries import *
 from pyspark.sql.functions import pandas_udf, PandasUDFType, udf
+from pyspark.sql.types import StringType
 from functools import reduce
 from pyspark.sql import DataFrame
 
@@ -17,8 +18,7 @@ def union_all(*dfs):
     return reduce(DataFrame.union, dfs)
 
 
-@udf("string")
-def concat_string_arrays(*ls):
+def concat(*ls):
     """
         This function concat multiple string columns into one column with separator '&'
 
@@ -29,3 +29,5 @@ def concat_string_arrays(*ls):
         >>> concat_string_arrays(*[re.sub("\s", "_", i) for i in product_names])
     """
     return ' & '.join(filter(None, ls))
+
+concat_string_arrays = udf(concat, StringType())
