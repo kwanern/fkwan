@@ -1,6 +1,3 @@
-#from ..libraries import *
-
-
 def days(day):
     """
         This function adds/subtracts day from a datetime object
