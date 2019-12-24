@@ -115,7 +115,7 @@ class ltv_validation(ltv):
 
     def collect(self, groupByName="AVG_MONETARY_PERCENTILE"):
         result = (
-            self.validation.groupBy(groupByName)
+            self.validation.groupBy("result." + groupByName)
             .agg(
                 sqlf.avg(sqlf.col("result.PRED_CLV")).alias("AVG_PRED_CLV"),
                 sqlf.avg(sqlf.col("result.COND_EXP_AVG_PROFT")).alias(
@@ -151,7 +151,7 @@ class ltv_validation(ltv):
                     sqlf.col("result." + self.cust_dict[self.customer])
                 ).alias("count"),
             )
-            .orderBy(groupByName)
+            .orderBy("result." + groupByName)
         )
         return result
 
