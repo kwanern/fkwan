@@ -118,6 +118,8 @@ class ltv_validation(ltv):
             self.validation.groupBy("result." + groupByName)
             .agg(
                 sqlf.avg(sqlf.col("result.PRED_CLV")).alias("AVG_PRED_CLV"),
+                sqlf.avg(sqlf.col("result.PRED_VISITS")).alias("AVG_PRED_VISITS"),
+                sqlf.avg(sqlf.col("Actual_Frequency")).alias("AVG_Actual_Frequency"),
                 sqlf.avg(sqlf.col("result.COND_EXP_AVG_PROFT")).alias(
                     "AVG_COND_EXP_AVG_PROFT"
                 ),
@@ -208,12 +210,12 @@ def plot_calibration_purchases_vs_holdout_purchases(ls, title="Actual Purchases 
     fig, ax1 = plt.subplots()
     ax1.plot(
         ls["FREQUENCY"],
-        ls["PRED_VISITS"],
+        ls["AVG_PRED_VISITS"],
         label="Model",
     )
     ax1.plot(
         ls["FREQUENCY"],
-        ls["Actual_Frequency"],
+        ls["AVG_Actual_Frequency"],
         label="Actual",
     )
 
