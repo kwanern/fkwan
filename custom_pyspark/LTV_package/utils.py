@@ -215,7 +215,7 @@ def plot_calibration_purchases_vs_holdout_purchases(
     pct = ls[ls["FREQUENCY"]<=max_freq]["count"].sum()/ls["count"].sum()
 
     fig, ax1 = plt.subplots()
-    ls = ls[ls["FREQUENCY"]<=max_freq]
+    ls = ls[ls["FREQUENCY"]<=max_freq].sort_values(by=['FREQUENCY'])
     ax1.plot(
         ls["FREQUENCY"],
         ls["AVG_PRED_VISITS"],
