@@ -121,6 +121,9 @@ class ltv_validation(ltv):
             )
             .agg(
                 sqlf.avg(sqlf.col("result.PRED_CLV")).alias("AVG_PRED_CLV"),
+                sqlf.sum(sqlf.col("result.PRED_CLV")).alias("SUM_PRED_CLV"),
+                sqlf.avg(sqlf.col("Actual_Monetary")).alias("AVG_Actual_Monetary"),
+                sqlf.sum(sqlf.col("Actual_Monetary")).alias("SUM_Actual_Monetary"),
                 sqlf.avg(sqlf.col("result.PRED_VISITS")).alias("AVG_PRED_VISITS"),
                 sqlf.avg(sqlf.col("Actual_Frequency")).alias("AVG_Actual_Frequency"),
                 sqlf.avg(sqlf.col("result.COND_EXP_AVG_PROFT")).alias(
@@ -135,8 +138,9 @@ class ltv_validation(ltv):
                     / sqlf.avg(sqlf.col("Actual_Monetary"))
                 ).alias("monetary_avg_diff"),
                 (
-                    sqlf.avg(sqlf.col("result.PRED_CLV"))
-                    - sqlf.avg(sqlf.col("Actual_Monetary"))
+                    (sqlf.sum(sqlf.col("result.PRED_CLV"))
+                    - sqlf.sum(sqlf.col("Actual_Monetary")))
+                    / sqlf.sum(sqlf.col("Actual_Monetary"))
                 ).alias("monetary_diff"),
                 (
                     (
@@ -146,8 +150,9 @@ class ltv_validation(ltv):
                     / sqlf.avg(sqlf.col("Actual_Frequency"))
                 ).alias("frequency_avg_diff"),
                 (
-                    sqlf.avg(sqlf.col("result.PRED_VISITS"))
-                    - sqlf.avg(sqlf.col("Actual_Frequency"))
+                    (sqlf.sum(sqlf.col("result.PRED_VISITS"))
+                    - sqlf.sum(sqlf.col("Actual_Frequency")))
+                    / sqlf.sum(sqlf.col("Actual_Frequency"))
                 ).alias("frequency_diff"),
                 sqlf.max(sqlf.col("result." + self.monetary_col)).alias(
                     "MONETARY_PERCENTILE"
