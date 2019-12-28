@@ -129,7 +129,6 @@ class ltv_validation(ltv):
                 sqlf.avg(sqlf.col("result.COND_EXP_AVG_PROFT")).alias(
                     "AVG_COND_EXP_AVG_PROFT"
                 ),
-                sqlf.avg(sqlf.col("Actual_Monetary")).alias("AVG_Actual_Monetary"),
                 (
                     (
                         sqlf.avg(sqlf.col("result.PRED_CLV"))
