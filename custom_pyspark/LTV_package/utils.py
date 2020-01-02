@@ -153,6 +153,13 @@ class ltv_validation(ltv):
                     - sqlf.sum(sqlf.col("Actual_Frequency")))
                     / sqlf.sum(sqlf.col("Actual_Frequency"))
                 ).alias("frequency_diff"),
+                sqlf.avg(
+                    (
+                        sqlf.col("result.PRED_CLV")
+                        - sqlf.col("Actual_Monetary")
+                    )
+                    / sqlf.col("Actual_Monetary")
+                ).alias("Avg_Variation"),
                 sqlf.max(sqlf.col("result." + self.monetary_col)).alias(
                     "MONETARY_PERCENTILE"
                 ),
