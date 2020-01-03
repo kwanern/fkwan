@@ -110,6 +110,7 @@ class ltv_validation(ltv):
             )
             .withColumn("PRED_PERCENTILE", sqlf.ntile(100).over(w))
             .withColumn("AVG_MONETARY_PERCENTILE", sqlf.ntile(100).over(w2))
+            .select(["result.*", "Actual_Monetary", "Actual_Frequency", "PRED_PERCENTILE", "AVG_MONETARY_PERCENTILE"])
         )
 
         return self
