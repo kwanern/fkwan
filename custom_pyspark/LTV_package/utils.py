@@ -98,7 +98,7 @@ class ltv_validation(ltv):
                 validation_spdf.alias("validation"),
                 sqlf.col("result." + self.cust_dict[self.customer])
                 == sqlf.col("validation." + self.cust_dict[self.customer]),
-                how="inner",
+                how="left",
             )
             .withColumn(
                 "Actual_Monetary",
