@@ -225,25 +225,19 @@ class ltv_validation(ltv):
         )
         return result
 
-    def mean_absolute_percentage_error(self):
-        result = (
-            self.validation.withColumn(
-                "CLV_MAPE",
-                sqlf.abs(sqlf.col("Actual_Monetary") - sqlf.col("result.PRED_CLV"))
-                / sqlf.col("Actual_Monetary"),
-            )
-            .withColumn(
-                "Frequency_MAPE",
-                sqlf.abs(sqlf.col("Actual_Frequency") - sqlf.col("result.PRED_VISITS"))
-                / sqlf.col("Actual_Frequency"),
-            )
-            .groupBy()
-            .agg(
-                sqlf.mean(sqlf.col("CLV_MAPE")).alias("CLV_MAPE"),
-                sqlf.mean(sqlf.col("Frequency_MAPE")).alias("Frequency_MAPE"),
-            )
+def mean_absolute_percentage_error(df, y, yhat):
+    result = (
+        df.withColumn(
+            "MAPE",
+            sqlf.abs(sqlf.col(y) - sqlf.col(yhat))
+            / sqlf.col(y),
         )
-        return result
+        .groupBy()
+        .agg(
+            sqlf.mean(sqlf.col("MAPE")).alias("MAPE")
+        )
+    )
+    return result
 
 
 def millions(x, pos):
