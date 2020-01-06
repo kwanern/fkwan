@@ -102,7 +102,7 @@ class ltv_validation(ltv):
 
         w = Window.partitionBy().orderBy(sqlf.col("PRED_CLV"))
         w2 = Window.partitionBy().orderBy(sqlf.col("result." + self.monetary_col))
-        past_date = datetime.datetime.strptime("2019-01-01", "%Y-%m-%d").date()
+        past_date = datetime.strptime("2019-01-01", "%Y-%m-%d").date()
         past_date = (
             past_date
             - datetime.timedelta(days=1)

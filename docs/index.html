@@ -1488,7 +1488,7 @@ code span.vs { color: #bf0303; } /* VerbatimString */
 code span.wa { color: #bf0303; } /* Warning */
 </style>
 
-<style type="text/css">.title, .title code{color: #4A708B;text-align: center;}</style>
+<style type="text/css">.title, .title code{color: #4A708B;text-align: center;}.changelog{border: 1px solid #e1e4e5;line-height: 1.5;padding:20px;}.changelog ul{margin-bottom:0px !important;}.changelog ul li{list-style: none !important;margin-left: 0px !important;}.changelog h4{color:#336699;margin-top:0;font-weight: bold;}.changelog .bbox_tag{display:inline-block;margin-right:13px;height:16px;line-height:17px;font-size:12px;text-align:center;color:#FFFFFF;padding-left:10px;padding-right:10px}.changelog .bbox_tag.bbt_update{background-color:#9DC818;}.changelog .bbox_text{font-weight:500;font-size:14px;color:#5E5E5E;}</style>
 
 </head>
 
@@ -1562,7 +1562,17 @@ $(document).ready(function () {
 <h1>Packages</h1>
 <div id="custom_pyspark.ltv_package" class="section level2">
 <h2><a href="%22https://github.com/kwanern/fkwan/tree/master/custom_pyspark/LTV_package%22">custom_pyspark.LTV_package</a></h2>
+<div id="changelog" class="section level4 changelog">
+<h4>Changelog</h4>
+<ul>
+<li><span class="bbox_tag bbt_update">Version 1.4.0</span> <span class="bbox_text">LTV - Validation Metrics and Data Pull</span></li>
+<li><span class="bbox_tag bbt_update">Version 1.4.1</span> <span class="bbox_text">LTV - Modified Code Structure</span></li>
+</ul>
+</div>
+<div id="section" class="section level4">
+<h4></h4>
 <p>This module is linked to <a href="%22https://github.com/CamDavidsonPilon/lifetimes%22">lifetimes</a> package built by Cameron Davidson-Pilon. It is modified to integrate with pyspark. Here is another <a href="%22https://readthedocs.org/projects/lifetimes/downloads/pdf/latest/%22">documentation</a> that can be useful to understand the <code>lifetimes</code> package.</p>
+</div>
 <div id="data-pull" class="section level3">
 <h3>Data Pull</h3>
 <p>For this example, we will be pulling customer data, either SR or non-SR. Here are the initial variables that can be modified accordingly to pull the desired data.</p>
