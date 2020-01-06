@@ -26,5 +26,5 @@ python/__pycache__/time.cpython-35.pyc
 custom_pyspark/LTV_package/validation.py
 custom_pyspark/LTV_package/push_pull.py
 custom_pyspark/LTV_package/main.py
-custom.css
-index.Rmd
+docs/custom.css
+docs/index.Rmd
