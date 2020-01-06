@@ -105,8 +105,8 @@ class ltv_validation(ltv):
         past_date = datetime.strptime("2019-01-01", "%Y-%m-%d").date()
         past_date = (
             past_date
-            - datetime.timedelta(days=1)
-            - datetime.timedelta(weeks=int(self.time) * 4)
+            - timedelta(days=1)
+            - timedelta(weeks=int(self.time) * 4)
         )
 
         self.naive = self.rfm_data(
