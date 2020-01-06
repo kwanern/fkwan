@@ -10,17 +10,28 @@ from .ltv import *
 
 
 class ltv_validation(ltv):
-    def __init__(self, spark, customer, obs_tbl, calibration_end, observation_end, penalizer_coef=0.001):
+    def __init__(
+        self,
+        spark,
+        customer,
+        obs_tbl,
+        calibration_end,
+        observation_end,
+        penalizer_coef=0.001,
+    ):
         self.calibration_end = calibration_end
         self.observation_end = observation_end
         self.obs_tbl = obs_tbl
         self.penalizer_coef = penalizer_coef
         self.result = None
         self.monetary_col = None
+        self.naive = None
+        self.time = None
         super().__init__(spark, customer)
 
     def clv_prediction(self, model, time=6.0, monetary_col="AVG_MONETARY_VALUE"):
         self.monetary_col = monetary_col
+        self.time = time
         t = 52.08 / (12 / time)  # 365 days
 
         pd_actual_training = self.rfm_data(
@@ -77,7 +88,7 @@ class ltv_validation(ltv):
             pd_actual_training["AGE"],
             pd_actual_training[self.monetary_col],
             freq="W",
-            time=time,
+            time=self.time,
             discount_rate=0.0056,
         )
 
@@ -91,6 +102,16 @@ class ltv_validation(ltv):
 
         w = Window.partitionBy().orderBy(sqlf.col("PRED_CLV"))
         w2 = Window.partitionBy().orderBy(sqlf.col("result." + self.monetary_col))
+        past_date = datetime.datetime.strptime("2019-01-01", "%Y-%m-%d").date()
+        past_date = (
+            past_date
+            - datetime.timedelta(days=1)
+            - datetime.timedelta(weeks=int(self.time) * 4)
+        )
+
+        self.naive = self.rfm_data(
+            self.obs_tbl, start_date=str(past_date), end_date=self.calibration_end
+        )
 
         self.validation = (
             result.alias("result")
@@ -98,6 +119,12 @@ class ltv_validation(ltv):
                 validation_spdf.alias("validation"),
                 sqlf.col("result." + self.cust_dict[self.customer])
                 == sqlf.col("validation." + self.cust_dict[self.customer]),
+                how="left",
+            )
+            .join(
+                self.naive.alias("naive"),
+                sqlf.col("result." + self.cust_dict[self.customer])
+                == sqlf.col("naive." + self.cust_dict[self.customer]),
                 how="left",
             )
             .withColumn(
@@ -108,9 +135,22 @@ class ltv_validation(ltv):
                 "Actual_Frequency",
                 sqlf.coalesce(sqlf.col("validation.FREQUENCY"), sqlf.lit(0)),
             )
+            .withColumn(
+                "Past_" + str(self.time) + "M_Monetary",
+                sqlf.coalesce(sqlf.col("naive.MONETARY_VALUE"), sqlf.lit(0)),
+            )
             .withColumn("PRED_PERCENTILE", sqlf.ntile(100).over(w))
             .withColumn("AVG_MONETARY_PERCENTILE", sqlf.ntile(100).over(w2))
-            .select(["result.*", "Actual_Monetary", "Actual_Frequency", "PRED_PERCENTILE", "AVG_MONETARY_PERCENTILE"])
+            .select(
+                [
+                    "result.*",
+                    "Actual_Monetary",
+                    "Actual_Frequency",
+                    "PRED_PERCENTILE",
+                    "AVG_MONETARY_PERCENTILE",
+                    "Past_" + str(self.time) + "M_Monetary",
+                ]
+            )
         )
 
         return self
@@ -118,13 +158,21 @@ class ltv_validation(ltv):
     def collect(self, groupByName="AVG_MONETARY_PERCENTILE"):
         result = (
             self.validation.groupBy(
-                "AVG_MONETARY_PERCENTILE" if (groupByName=="AVG_MONETARY_PERCENTILE") else "result.{0}".format(groupByName)
+                "AVG_MONETARY_PERCENTILE"
+                if (groupByName == "AVG_MONETARY_PERCENTILE")
+                else "result.{0}".format(groupByName)
             )
             .agg(
                 sqlf.avg(sqlf.col("result.PRED_CLV")).alias("AVG_PRED_CLV"),
                 sqlf.sum(sqlf.col("result.PRED_CLV")).alias("SUM_PRED_CLV"),
                 sqlf.avg(sqlf.col("Actual_Monetary")).alias("AVG_Actual_Monetary"),
                 sqlf.sum(sqlf.col("Actual_Monetary")).alias("SUM_Actual_Monetary"),
+                sqlf.avg(sqlf.col("Past_" + str(self.time) + "M_Monetary")).alias(
+                    "AVG_Past_" + str(self.time) + "M_Monetary"
+                ),
+                sqlf.sum(sqlf.col("Past_" + str(self.time) + "M_Monetary")).alias(
+                    "SUM_Past_" + str(self.time) + "M_Monetary"
+                ),
                 sqlf.avg(sqlf.col("result.PRED_VISITS")).alias("AVG_PRED_VISITS"),
                 sqlf.avg(sqlf.col("Actual_Frequency")).alias("AVG_Actual_Frequency"),
                 sqlf.avg(sqlf.col("result.COND_EXP_AVG_PROFT")).alias(
@@ -138,8 +186,10 @@ class ltv_validation(ltv):
                     / sqlf.avg(sqlf.col("Actual_Monetary"))
                 ).alias("monetary_avg_diff"),
                 (
-                    (sqlf.sum(sqlf.col("result.PRED_CLV"))
-                    - sqlf.sum(sqlf.col("Actual_Monetary")))
+                    (
+                        sqlf.sum(sqlf.col("result.PRED_CLV"))
+                        - sqlf.sum(sqlf.col("Actual_Monetary"))
+                    )
                     / sqlf.sum(sqlf.col("Actual_Monetary"))
                 ).alias("monetary_diff"),
                 (
@@ -150,15 +200,14 @@ class ltv_validation(ltv):
                     / sqlf.avg(sqlf.col("Actual_Frequency"))
                 ).alias("frequency_avg_diff"),
                 (
-                    (sqlf.sum(sqlf.col("result.PRED_VISITS"))
-                    - sqlf.sum(sqlf.col("Actual_Frequency")))
+                    (
+                        sqlf.sum(sqlf.col("result.PRED_VISITS"))
+                        - sqlf.sum(sqlf.col("Actual_Frequency"))
+                    )
                     / sqlf.sum(sqlf.col("Actual_Frequency"))
                 ).alias("frequency_diff"),
                 sqlf.avg(
-                    (
-                        sqlf.col("result.PRED_CLV")
-                        - sqlf.col("Actual_Monetary")
-                    )
+                    (sqlf.col("result.PRED_CLV") - sqlf.col("Actual_Monetary"))
                     / sqlf.col("Actual_Monetary")
                 ).alias("Avg_Variation"),
                 sqlf.max(sqlf.col("result." + self.monetary_col)).alias(
@@ -169,35 +218,42 @@ class ltv_validation(ltv):
                 ).alias("count"),
             )
             .orderBy(
-                "AVG_MONETARY_PERCENTILE" if (groupByName=="AVG_MONETARY_PERCENTILE") else "result.{0}".format(groupByName)
+                "AVG_MONETARY_PERCENTILE"
+                if (groupByName == "AVG_MONETARY_PERCENTILE")
+                else "result.{0}".format(groupByName)
             )
         )
         return result
 
     def mean_absolute_percentage_error(self):
         result = (
-            self.validation
-            .withColumn(
+            self.validation.withColumn(
                 "CLV_MAPE",
-                sqlf.abs(sqlf.col("Actual_Monetary")-sqlf.col("result.PRED_CLV"))/sqlf.col("Actual_Monetary")
+                sqlf.abs(sqlf.col("Actual_Monetary") - sqlf.col("result.PRED_CLV"))
+                / sqlf.col("Actual_Monetary"),
             )
             .withColumn(
                 "Frequency_MAPE",
-                sqlf.abs(sqlf.col("Actual_Frequency")-sqlf.col("result.PRED_VISITS"))/sqlf.col("Actual_Frequency")
+                sqlf.abs(sqlf.col("Actual_Frequency") - sqlf.col("result.PRED_VISITS"))
+                / sqlf.col("Actual_Frequency"),
             )
             .groupBy()
             .agg(
                 sqlf.mean(sqlf.col("CLV_MAPE")).alias("CLV_MAPE"),
-                sqlf.mean(sqlf.col("Frequency_MAPE")).alias("Frequency_MAPE")
+                sqlf.mean(sqlf.col("Frequency_MAPE")).alias("Frequency_MAPE"),
             )
         )
         return result
+
 
 def millions(x, pos):
     "The two args are the value and tick position"
     return "%1.1fM" % (x * 1e-6)
 
-def monetary_percentile_plot(ls, mape_ls, labels, title, y_col="monetary_avg_diff", y_label="% Differences"):
+
+def monetary_percentile_plot(
+    ls, mape_ls, labels, title, y_col="monetary_avg_diff", y_label="% Differences"
+):
     title = title
     xlabel = "Average Monetary Percentile"
     ylabel_1 = y_label
@@ -206,14 +262,10 @@ def monetary_percentile_plot(ls, mape_ls, labels, title, y_col="monetary_avg_dif
     fig, ax1 = plt.subplots()
 
     for x in range(0, len(ls)):
-        ax1.plot(
-            ls[x]["AVG_MONETARY_PERCENTILE"],
-            ls[x][y_col],
-            label=labels[x],
-        )
-        txt="MAPE for {0} = {1}".format(labels[x], mape_ls[x])
-        ax1.set_title(txt, fontdict={'fontsize': 8, 'fontweight': 'medium'})
-        
+        ax1.plot(ls[x]["AVG_MONETARY_PERCENTILE"], ls[x][y_col], label=labels[x])
+        txt = "MAPE for {0} = {1}".format(labels[x], mape_ls[x])
+        ax1.set_title(txt, fontdict={"fontsize": 8, "fontweight": "medium"})
+
     ax1.plot(ls[x]["AVG_MONETARY_PERCENTILE"], np.zeros(ls[x].shape[0]), ":r")
     plt.suptitle(title)
     ax1.set_ylabel(ylabel_1)
@@ -224,28 +276,21 @@ def monetary_percentile_plot(ls, mape_ls, labels, title, y_col="monetary_avg_dif
 
 
 def plot_calibration_purchases_vs_holdout_purchases(
-    ls, 
-    title="Actual Purchases in Holdout Period vs Predicted Purchases",
-    max_freq=35):
+    ls, title="Actual Purchases in Holdout Period vs Predicted Purchases", max_freq=35
+):
     formatter = FuncFormatter(millions)
-    pct = ls[ls["FREQUENCY"]<=max_freq]["count"].sum()/ls["count"].sum()
+    pct = ls[ls["FREQUENCY"] <= max_freq]["count"].sum() / ls["count"].sum()
 
     fig, ax1 = plt.subplots()
-    ls = ls[ls["FREQUENCY"]<=max_freq].sort_values(by=['FREQUENCY'])
-    ax1.plot(
-        ls["FREQUENCY"],
-        ls["AVG_PRED_VISITS"],
-        label="Model",
-    )
-    ax1.plot(
-        ls["FREQUENCY"],
-        ls["AVG_Actual_Frequency"],
-        label="Actual",
-    )
+    ls = ls[ls["FREQUENCY"] <= max_freq].sort_values(by=["FREQUENCY"])
+    ax1.plot(ls["FREQUENCY"], ls["AVG_PRED_VISITS"], label="Model")
+    ax1.plot(ls["FREQUENCY"], ls["AVG_Actual_Frequency"], label="Actual")
 
-    txt="Unique Id counts for Max Frequency <= {0}: {1:.2f}%".format(max_freq, pct*100)
+    txt = "Unique Id counts for Max Frequency <= {0}: {1:.2f}%".format(
+        max_freq, pct * 100
+    )
     plt.suptitle(title)
-    ax1.set_title(txt, fontdict={'fontsize': 8, 'fontweight': 'medium'})
+    ax1.set_title(txt, fontdict={"fontsize": 8, "fontweight": "medium"})
     plt.xlabel("Purchases in calibration period")
     plt.ylabel("Average of Purchases in Holdout Period")
     plt.legend()
