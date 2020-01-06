@@ -2,6 +2,10 @@
 
 This package includes functions for python and pyspark that are used in databricks.
 
+## Documentation
+
+Link: https://kwanern.github.io/fkwan/
+
 ## Dependencies
 
  - Spark 2.4. 
