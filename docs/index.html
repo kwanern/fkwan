@@ -1568,6 +1568,7 @@ $(document).ready(function () {
 <li><span class="bbox_tag bbt_update">Version 1.4.0</span> <span class="bbox_text">LTV - Validation Metrics and Data Pull</span></li>
 <li><span class="bbox_tag bbt_update">Version 1.4.1</span> <span class="bbox_text">LTV - Modified Code Structure</span></li>
 <li><span class="bbox_tag bbt_update">Version 1.4.2</span> <span class="bbox_text">LTV - MAPE function</span></li>
+<li><span class="bbox_tag bbt_update">Version 1.4.3</span> <span class="bbox_text">LTV - Naive past X months column</span></li>
 </ul>
 </div>
 <div id="section" class="section level4">
@@ -1672,6 +1673,9 @@ $(document).ready(function () {
 <li><code>validation_clv_id</code>: A pyspark dataframe, on a customer level with RFM and predicted CLV output.</li>
 <li><code>validation_clv_df</code>: A pyspark dataframe, output groupBy <code>&quot;AVG_MONETARY_PERCENTILE&quot;</code>.</li>
 </ul>
+<blockquote>
+<p><code>clv_prediction</code> now includes naive benchmark which is <code>Past_XM_Monetary</code> as a new column. If the model is to validate 9 months of LTV, this new column will be <code>Past_9M_Monetary</code> before the actual period.</p>
+</blockquote>
 <div id="mean-absolute-percentage-error-mape" class="section level4">
 <h4>Mean Absolute Percentage Error (MAPE)</h4>
 <p>To calculate MAPE for the predicted LTV vs Actual, the funtion takes in a spark dataframe and columns:</p>

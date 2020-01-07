@@ -36,6 +36,7 @@ Customer Profiler Packages:
 * [Version 1.4.0] LTV - Validation Metrics and Data Pull
 * [Version 1.4.1] udf - Add describe spark dataframe
 * [Version 1.4.2] LTV - MAPE function
+* [Version 1.4.3] Naive past X months column
 
 ## Authors
 
