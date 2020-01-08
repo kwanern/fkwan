@@ -1690,7 +1690,7 @@ $(document).ready(function () {
 <div id="mean-absolute-error-mae" class="section level4">
 <h4>Mean Absolute Error (MAE)</h4>
 <p>To calculate MAE for the predicted LTV vs Actual, the funtion takes in a spark dataframe and columns:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><a class="sourceLine" id="cb9-1" data-line-number="1">BetaGeoFitter_mape <span class="op">=</span> (</a>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><a class="sourceLine" id="cb9-1" data-line-number="1">BetaGeoFitter_mae <span class="op">=</span> (</a>
 <a class="sourceLine" id="cb9-2" data-line-number="2">  ltv.mean_absolute_error(</a>
 <a class="sourceLine" id="cb9-3" data-line-number="3">    df<span class="op">=</span>spark.table(<span class="st">&quot;fkwan.betageofitter_clv_id_non_sr_9m&quot;</span>)</a>
 <a class="sourceLine" id="cb9-4" data-line-number="4">    y<span class="op">=</span><span class="st">&quot;Actual_Monetary&quot;</span>, </a>
