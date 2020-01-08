@@ -236,8 +236,22 @@ def mean_absolute_percentage_error(df, y, yhat):
         .agg(
             sqlf.mean(sqlf.col("MAPE")).alias("MAPE")
         )
-    )
-    return result
+    ).toPandas()
+    return round(result["MAPE"][0], 2)
+
+def mean_absolute_error(df, y, yhat):
+    n = df.count()
+    result = (
+        df.withColumn(
+            "MAE",
+            sqlf.abs(sqlf.col(y) - sqlf.col(yhat)),
+        )
+        .groupBy()
+        .agg(
+            sqlf.sum(sqlf.col("MAE")).alias("MAE")
+        )
+    ).toPandas()
+    return round(result["MAE"][0]/n, 2)
 
 
 def millions(x, pos):

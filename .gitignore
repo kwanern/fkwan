@@ -28,3 +28,5 @@ custom_pyspark/LTV_package/push_pull.py
 custom_pyspark/LTV_package/main.py
 docs/custom.css
 docs/index.Rmd
+docs/.RData
+docs/.Rhistory
