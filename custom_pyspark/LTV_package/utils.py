@@ -17,8 +17,10 @@ class ltv_validation(ltv):
         obs_tbl,
         calibration_end,
         observation_end,
+        calibration_start = '2010-01-01',
         penalizer_coef=0.001,
     ):
+        self.calibration_start = calibration_start
         self.calibration_end = calibration_end
         self.observation_end = observation_end
         self.obs_tbl = obs_tbl
@@ -35,7 +37,7 @@ class ltv_validation(ltv):
         t = 52.08 / (12 / time)  # 365 days
 
         pd_actual_training = self.rfm_data(
-            self.obs_tbl, start_date="2010-01-01", end_date=self.calibration_end
+            self.obs_tbl, start_date=self.calibration_start, end_date=self.calibration_end
         ).toPandas()
 
         validation_spdf = self.rfm_data(
