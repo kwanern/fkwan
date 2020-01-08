@@ -139,6 +139,10 @@ class ltv_validation(ltv):
                 "Past_" + str(int(self.time)) + "M_Monetary",
                 sqlf.coalesce(sqlf.col("naive.MONETARY_VALUE"), sqlf.lit(0)),
             )
+            .withColumn(
+                "Past_" + str(int(self.time)) + "M_Frequency",
+                sqlf.coalesce(sqlf.col("naive.FREQUENCY"), sqlf.lit(0)),
+            )
             .withColumn("PRED_PERCENTILE", sqlf.ntile(100).over(w))
             .withColumn("AVG_MONETARY_PERCENTILE", sqlf.ntile(100).over(w2))
             .select(
@@ -149,6 +153,7 @@ class ltv_validation(ltv):
                     "PRED_PERCENTILE",
                     "AVG_MONETARY_PERCENTILE",
                     "Past_" + str(int(self.time)) + "M_Monetary",
+                    "Past_" + str(int(self.time)) + "M_Frequency",
                 ]
             )
         )
@@ -172,6 +177,12 @@ class ltv_validation(ltv):
                 ),
                 sqlf.sum(sqlf.col("Past_" + str(int(self.time)) + "M_Monetary")).alias(
                     "SUM_Past_" + str(int(self.time)) + "M_Monetary"
+                ),
+                sqlf.avg(sqlf.col("Past_" + str(int(self.time)) + "M_Frequency")).alias(
+                    "AVG_Past_" + str(int(self.time)) + "M_Frequency"
+                ),
+                sqlf.sum(sqlf.col("Past_" + str(int(self.time)) + "M_Frequency")).alias(
+                    "SUM_Past_" + str(int(self.time)) + "M_Frequency"
                 ),
                 sqlf.avg(sqlf.col("result.PRED_VISITS")).alias("AVG_PRED_VISITS"),
                 sqlf.avg(sqlf.col("Actual_Frequency")).alias("AVG_Actual_Frequency"),
