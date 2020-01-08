@@ -35,9 +35,8 @@ Customer Profiler Packages:
 * [Version 1.3.6] Cohort Metric - Engagement takes customer class
 * [Version 1.4.0] LTV - Validation Metrics and Data Pull
 * [Version 1.4.1] udf - Add describe spark dataframe
-* [Version 1.4.2] LTV - MAPE function
+* [Version 1.4.2] LTV - MAPE and MAE functions
 * [Version 1.4.3] Naive past X months column
-* [Version 1.4.4] LTV - MAE function
 
 ## Authors
 
