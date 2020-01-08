@@ -1674,7 +1674,7 @@ $(document).ready(function () {
 <li><code>validation_clv_df</code>: A pyspark dataframe, output groupBy <code>&quot;AVG_MONETARY_PERCENTILE&quot;</code>.</li>
 </ul>
 <blockquote>
-<p><code>clv_prediction</code> now includes naive benchmark which is <code>Past_XM_Monetary</code> as a new column. If the model is to validate 9 months of LTV, this new column will be <code>Past_9M_Monetary</code> before the actual period.</p>
+<p><code>clv_prediction</code> now includes naive benchmark which is <code>Past_XM_Monetary</code> and <code>Past_XM_Frequency</code> as a new column. If the model is to validate 9 months of LTV, this new column will be <code>Past_9M_Monetary</code> and <code>Past_9M_Frequency</code> before the actual period.</p>
 </blockquote>
 <div id="mean-absolute-percentage-error-mape" class="section level4">
 <h4>Mean Absolute Percentage Error (MAPE)</h4>
