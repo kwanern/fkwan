@@ -1653,20 +1653,21 @@ $(document).ready(function () {
 <a class="sourceLine" id="cb7-2" data-line-number="2">    spark<span class="op">=</span>spark,</a>
 <a class="sourceLine" id="cb7-3" data-line-number="3">    customer<span class="op">=</span>nonsr_customer_type,</a>
 <a class="sourceLine" id="cb7-4" data-line-number="4">    obs_tbl<span class="op">=</span><span class="st">&quot;fkwan.ampId_obs_full&quot;</span>, <span class="co"># Table name save from `nonsr_obs_tbl` or `nonsr_obs_tbl` but slower</span></a>
-<a class="sourceLine" id="cb7-5" data-line-number="5">    calibration_end<span class="op">=</span>calibration_end,</a>
-<a class="sourceLine" id="cb7-6" data-line-number="6">    observation_end<span class="op">=</span><span class="fl">9.0</span>,</a>
-<a class="sourceLine" id="cb7-7" data-line-number="7">    penalizer_coef<span class="op">=</span>penalizer</a>
-<a class="sourceLine" id="cb7-8" data-line-number="8">)</a>
-<a class="sourceLine" id="cb7-9" data-line-number="9">validation_clv <span class="op">=</span> (</a>
-<a class="sourceLine" id="cb7-10" data-line-number="10">    ltv_validation.clv_prediction(</a>
-<a class="sourceLine" id="cb7-11" data-line-number="11">        model_ls[x], monetary_col<span class="op">=</span><span class="st">&quot;AVG_MONETARY_VALUE&quot;</span>, time<span class="op">=</span>observation_end_9M</a>
-<a class="sourceLine" id="cb7-12" data-line-number="12">    )</a>
-<a class="sourceLine" id="cb7-13" data-line-number="13">)</a>
-<a class="sourceLine" id="cb7-14" data-line-number="14">validation_clv_id <span class="op">=</span> validation_clv.validation</a>
-<a class="sourceLine" id="cb7-15" data-line-number="15">validation_clv_df <span class="op">=</span> (</a>
-<a class="sourceLine" id="cb7-16" data-line-number="16">  validation_clv</a>
-<a class="sourceLine" id="cb7-17" data-line-number="17">  .collect(groupByName<span class="op">=</span><span class="st">&quot;AVG_MONETARY_PERCENTILE&quot;</span>)</a>
-<a class="sourceLine" id="cb7-18" data-line-number="18">)</a></code></pre></div>
+<a class="sourceLine" id="cb7-5" data-line-number="5">    calibration_start <span class="op">=</span> training_start_date,</a>
+<a class="sourceLine" id="cb7-6" data-line-number="6">    calibration_end<span class="op">=</span>calibration_end,</a>
+<a class="sourceLine" id="cb7-7" data-line-number="7">    observation_end<span class="op">=</span><span class="fl">9.0</span>,</a>
+<a class="sourceLine" id="cb7-8" data-line-number="8">    penalizer_coef<span class="op">=</span>penalizer</a>
+<a class="sourceLine" id="cb7-9" data-line-number="9">)</a>
+<a class="sourceLine" id="cb7-10" data-line-number="10">validation_clv <span class="op">=</span> (</a>
+<a class="sourceLine" id="cb7-11" data-line-number="11">    ltv_validation.clv_prediction(</a>
+<a class="sourceLine" id="cb7-12" data-line-number="12">        model_ls[x], monetary_col<span class="op">=</span><span class="st">&quot;AVG_MONETARY_VALUE&quot;</span>, time<span class="op">=</span>observation_end_9M</a>
+<a class="sourceLine" id="cb7-13" data-line-number="13">    )</a>
+<a class="sourceLine" id="cb7-14" data-line-number="14">)</a>
+<a class="sourceLine" id="cb7-15" data-line-number="15">validation_clv_id <span class="op">=</span> validation_clv.validation</a>
+<a class="sourceLine" id="cb7-16" data-line-number="16">validation_clv_df <span class="op">=</span> (</a>
+<a class="sourceLine" id="cb7-17" data-line-number="17">  validation_clv</a>
+<a class="sourceLine" id="cb7-18" data-line-number="18">  .collect(groupByName<span class="op">=</span><span class="st">&quot;AVG_MONETARY_PERCENTILE&quot;</span>)</a>
+<a class="sourceLine" id="cb7-19" data-line-number="19">)</a></code></pre></div>
 <ul>
 <li><code>ltv_validation</code>: A class</li>
 <li><code>validation_clv</code>: A class, with lifetimes data generated inside <code>self</code>.</li>
