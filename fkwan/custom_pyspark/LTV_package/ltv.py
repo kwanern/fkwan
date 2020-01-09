@@ -283,7 +283,7 @@ class ltv(object):
             )
         return self.transactions
 
-    def rfm_data(self, obs_tbl, start_date, end_date):
+    def rfm_data(self, obs_tbl, start_date, end_date, monetary_cap=None):
         if type(obs_tbl) == str:
             obs_tbl = self.spark.table(obs_tbl)
         else:
@@ -351,5 +351,19 @@ class ltv(object):
                 ]
             )
         )
+
+        if self.monetary_cap:
+            rfm_actual_training = rfm_actual_training.withColumn(
+                "MONETARY_VALUE",
+                sqlf.when(
+                    sqlf.col("MONETARY_VALUE") >= self.monetary_cap, self.monetary_cap
+                ).otherwise(sqlf.col("MONETARY_VALUE")),
+            ).withColumn(
+                "AVG_MONETARY_VALUE",
+                sqlf.when(
+                    sqlf.col("MONETARY_VALUE") >= self.monetary_cap,
+                    self.monetary_cap / sqlf.col("FREQUENCY"),
+                ).otherwise(sqlf.col("AVG_MONETARY_VALUE")),
+            )
 
         return rfm_actual_training

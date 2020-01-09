@@ -17,9 +17,10 @@ class ltv_validation(ltv):
         obs_tbl,
         calibration_end,
         observation_end,
-        calibration_start='2010-01-01',
+        calibration_start="2010-01-01",
         penalizer_coef=0.001,
         filters=None,
+        monetary_cap=None,
     ):
         self.calibration_start = calibration_start
         self.calibration_end = calibration_end
@@ -31,6 +32,7 @@ class ltv_validation(ltv):
         self.naive = None
         self.time = None
         self.filters = filters
+        self.monetary_cap = monetary_cap
         super().__init__(spark, customer)
 
     def clv_prediction(self, model, time=6.0, monetary_col="AVG_MONETARY_VALUE"):
@@ -39,16 +41,22 @@ class ltv_validation(ltv):
         t = 52.08 / (12 / time)  # 365 days
 
         pd_actual_training = self.rfm_data(
-            self.obs_tbl, start_date=self.calibration_start, end_date=self.calibration_end
+            self.obs_tbl,
+            start_date=self.calibration_start,
+            end_date=self.calibration_end,
+            monetary_cap=self.monetary_cap,
         )
 
         if self.filters:
-            pd_actual_training = pd_actual_training.filter(self.filters).toPandas() 
+            pd_actual_training = pd_actual_training.filter(self.filters).toPandas()
         else:
             pd_actual_training = pd_actual_training.toPandas()
 
         validation_spdf = self.rfm_data(
-            self.obs_tbl, start_date=self.calibration_end, end_date=self.observation_end
+            self.obs_tbl,
+            start_date=self.calibration_end,
+            end_date=self.observation_end,
+            monetary_cap=self.monetary_cap,
         )
 
         for col in ["RECENCY", "AGE", self.monetary_col]:
@@ -112,11 +120,7 @@ class ltv_validation(ltv):
         w = Window.partitionBy().orderBy(sqlf.col("PRED_CLV"))
         w2 = Window.partitionBy().orderBy(sqlf.col("result." + self.monetary_col))
         past_date = datetime.strptime("2019-01-01", "%Y-%m-%d").date()
-        past_date = (
-            past_date
-            - timedelta(days=1)
-            - timedelta(weeks=int(self.time) * 4)
-        )
+        past_date = past_date - timedelta(days=1) - timedelta(weeks=int(self.time) * 4)
 
         self.naive = self.rfm_data(
             self.obs_tbl, start_date=str(past_date), end_date=self.calibration_end
@@ -245,33 +249,24 @@ class ltv_validation(ltv):
         )
         return result
 
+
 def mean_absolute_percentage_error(df, y, yhat):
     result = (
-        df.withColumn(
-            "MAPE",
-            sqlf.abs(sqlf.col(y) - sqlf.col(yhat))
-            / sqlf.col(y),
-        )
+        df.withColumn("MAPE", sqlf.abs(sqlf.col(y) - sqlf.col(yhat)) / sqlf.col(y))
         .groupBy()
-        .agg(
-            sqlf.mean(sqlf.col("MAPE")).alias("MAPE")
-        )
+        .agg(sqlf.mean(sqlf.col("MAPE")).alias("MAPE"))
     ).toPandas()
     return round(result["MAPE"][0], 2)
+
 
 def mean_absolute_error(df, y, yhat):
     n = df.count()
     result = (
-        df.withColumn(
-            "MAE",
-            sqlf.abs(sqlf.col(y) - sqlf.col(yhat)),
-        )
+        df.withColumn("MAE", sqlf.abs(sqlf.col(y) - sqlf.col(yhat)))
         .groupBy()
-        .agg(
-            sqlf.sum(sqlf.col("MAE")).alias("MAE")
-        )
+        .agg(sqlf.sum(sqlf.col("MAE")).alias("MAE"))
     ).toPandas()
-    return round(result["MAE"][0]/n, 2)
+    return round(result["MAE"][0] / n, 2)
 
 
 def millions(x, pos):
