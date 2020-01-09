@@ -11,5 +11,6 @@ setup(
    long_description_content_type="text/markdown",
    author='Fu Ern Kwan',
    author_email='kwanern@umich.edu',
-   url="https://github.com/kwanern/fkwan"
+   url="https://github.com/kwanern/fkwan",
+   include_package_data=True
 )

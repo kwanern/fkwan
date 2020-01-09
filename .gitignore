@@ -30,3 +30,8 @@ docs/custom.css
 docs/index.Rmd
 docs/.RData
 docs/.Rhistory
+dist/fkwan-1.4.3-py3.5.egg
+fkwan.egg-info/dependency_links.txt
+fkwan.egg-info/PKG-INFO
+fkwan.egg-info/SOURCES.txt
+fkwan.egg-info/top_level.txt
