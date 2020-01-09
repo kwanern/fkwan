@@ -2,9 +2,7 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/.vs/fkwan/v15
-/.vs/slnx.sqlite
-/.vs/VSWorkspaceState.json
+.vs
 fkwan/custom_pyspark/__pycache__/__init__.cpython-35.pyc
 fkwan/custom_custom_pyspark/__pycache__
 fkwan/custom_pyspark/LTV/main.py
@@ -13,7 +11,7 @@ fkwan/custom_pyspark/LTV/validation.py
 fkwan/custom_pyspark/LTV_package/__pycache__/utils.cpython-35.pyc
 __pycache__/__init__.cpython-35.pyc
 fkwan/custom_pyspark/.git
-.vscode/settings.json
+.vscode
 fkwan/custom_pyspark/.gitignore
 fkwan/custom_pyspark/LTV_package/__pycache__/__init__.cpython-35.pyc
 fkwan/custom_pyspark/LTV_package/__pycache__/ltv.cpython-35.pyc
@@ -30,8 +28,7 @@ docs/custom.css
 docs/index.Rmd
 docs/.RData
 docs/.Rhistory
-dist/fkwan-1.4.3-py3.5.egg
-fkwan.egg-info/dependency_links.txt
-fkwan.egg-info/PKG-INFO
-fkwan.egg-info/SOURCES.txt
-fkwan.egg-info/top_level.txt
+dist
+fkwan.egg-info
+build
+
