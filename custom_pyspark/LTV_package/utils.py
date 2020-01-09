@@ -17,8 +17,9 @@ class ltv_validation(ltv):
         obs_tbl,
         calibration_end,
         observation_end,
-        calibration_start = '2010-01-01',
+        calibration_start='2010-01-01',
         penalizer_coef=0.001,
+        filters=None,
     ):
         self.calibration_start = calibration_start
         self.calibration_end = calibration_end
@@ -29,6 +30,7 @@ class ltv_validation(ltv):
         self.monetary_col = None
         self.naive = None
         self.time = None
+        self.filters = filters
         super().__init__(spark, customer)
 
     def clv_prediction(self, model, time=6.0, monetary_col="AVG_MONETARY_VALUE"):
@@ -38,7 +40,12 @@ class ltv_validation(ltv):
 
         pd_actual_training = self.rfm_data(
             self.obs_tbl, start_date=self.calibration_start, end_date=self.calibration_end
-        ).toPandas()
+        )
+
+        if self.filter:
+            pd_actual_training = pd_actual_training.filter(self.filters).toPandas() 
+        else:
+            pd_actual_training = pd_actual_training.toPandas()
 
         validation_spdf = self.rfm_data(
             self.obs_tbl, start_date=self.calibration_end, end_date=self.observation_end
