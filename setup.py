@@ -12,5 +12,7 @@ setup(
    author='Fu Ern Kwan',
    author_email='kwanern@umich.edu',
    url="https://github.com/kwanern/fkwan",
-   include_package_data=True
+   include_package_data=True,
+   packages=find_packages(),
+   zip_safe=True
 )
