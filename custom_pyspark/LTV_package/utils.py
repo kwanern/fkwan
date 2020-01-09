@@ -42,7 +42,7 @@ class ltv_validation(ltv):
             self.obs_tbl, start_date=self.calibration_start, end_date=self.calibration_end
         )
 
-        if self.filter:
+        if self.filters:
             pd_actual_training = pd_actual_training.filter(self.filters).toPandas() 
         else:
             pd_actual_training = pd_actual_training.toPandas()
