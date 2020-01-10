@@ -318,6 +318,16 @@ class ltv(object):
                     )
                     * sqlf.lit(1.0)
                 ).alias("AGE"),
+                (
+                    sqlf.round(
+                        sqlf.datediff(
+                            sqlf.to_date(sqlf.lit(end_date)),
+                            sqlf.max(sqlf.col("BusinessDate")),
+                        ),
+                        2,
+                    )
+                    * sqlf.lit(1.0)
+                ).alias("TIME_DIFF"),
                 sqlf.round(
                     sqlf.sum(sqlf.col("NETDISCOUNTEDSALESAMOUNT_REFINED")), 2
                 ).alias("MONETARY_VALUE"),
@@ -348,6 +358,7 @@ class ltv(object):
                     "AVG_MONETARY_VALUE",
                     "MAX_BUSINESSDATE",
                     "MIN_BUSINESSDATE",
+                    "TIME_DIFF"
                 ]
             )
         )
