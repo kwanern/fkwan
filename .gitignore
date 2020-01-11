@@ -3,13 +3,12 @@
 ################################################################################
 
 .vs
-/fkwan/custom_pyspark/__pycache__
-/fkwan/custom_pyspark/LTV_package/__pycache__
-/fkwan/custom_pyspark/LTV/main.py
-/fkwan/custom_pyspark/LTV/push_pull.py
-/fkwan/custom_pyspark/LTV/validation.py
-/fkwan/custom_pyspark/LTV_package/__pycache__
-fkwan/custom_pyspark/.git
+fkwan/custom_pyspark/__pycache__
+fkwan/custom_pyspark/LTV_package/__pycache__
+fkwan/custom_pyspark/LTV/main.py
+fkwan/custom_pyspark/LTV/push_pull.py
+fkwan/custom_pyspark/LTV/validation.py
+fkwan/custom_pyspark/LTV_package/__pycache__
 .vscode
 fkwan/libraries/__pycache__
 fkwan/python/Date/__pycache__
