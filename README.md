@@ -17,8 +17,6 @@ Link: https://kwanern.github.io/fkwan/
 `fkwan` is available at the [Github](https://github.com/kwanern/fkwan), for databricks
 ```
 /databricks/python/bin/pip install git+https://github.com/kwanern/fkwan.git
-cd /databricks/python3/lib/python3.5/site-packages
-git clone https://github.com/kwanern/fkwan.git
 ```
 
 After installing the packages, you can import the package:
